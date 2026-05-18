@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智力测试中心</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ========== 首页 - 测试选择 ========== -->
+    <div id="selector" class="page active">
+      <div class="card selector-card">
+        <div class="selector-header">
+          <div class="selector-logo">🧠</div>
+          <h1>智力测试中心</h1>
+          <p class="selector-subtitle">选择一项测试开始评估你的认知能力</p>
+        </div>
+        <div class="test-grid">
+          <!-- WAIS 韦氏成人 -->
+          <div class="test-card" data-test="wais" tabindex="0" role="button" aria-label="韦氏成人智力测验">
+            <div class="test-card-bg" style="background:linear-gradient(135deg,#667eea,#764ba2)"></div>
+            <div class="test-card-content">
+              <span class="test-icon">🧑</span>
+              <h3>韦氏成人智力测验</h3>
+              <p class="test-desc">参考WAIS-IV架构，评估言语理解、知觉推理、工作记忆与加工速度</p>
+              <div class="test-meta">
+                <span>30 题</span><span class="meta-dot">·</span><span>25 分钟</span><span class="meta-dot">·</span><span>16岁+</span>
+              </div>
+            </div>
+          </div>
+          <!-- WISC 韦氏儿童 -->
+          <div class="test-card" data-test="wisc" tabindex="0" role="button" aria-label="韦氏儿童智力测验">
+            <div class="test-card-bg" style="background:linear-gradient(135deg,#11998e,#38ef7d)"></div>
+            <div class="test-card-content">
+              <span class="test-icon">🧒</span>
+              <h3>韦氏儿童智力测验</h3>
+              <p class="test-desc">参考WISC-V架构，专为6-16岁儿童设计，评估核心认知能力</p>
+              <div class="test-meta">
+                <span>30 题</span><span class="meta-dot">·</span><span>25 分钟</span><span class="meta-dot">·</span><span>6-16岁</span>
+              </div>
+            </div>
+          </div>
+          <!-- Binet 比奈 -->
+          <div class="test-card" data-test="binet" tabindex="0" role="button" aria-label="斯坦福-比奈智力测试">
+            <div class="test-card-bg" style="background:linear-gradient(135deg,#f093fb,#f5576c)"></div>
+            <div class="test-card-content">
+              <span class="test-icon">📐</span>
+              <h3>斯坦福-比奈智力测试</h3>
+              <p class="test-desc">参考SB-5架构，评估流体推理、知识、数量推理、视觉空间与工作记忆</p>
+              <div class="test-meta">
+                <span>30 题</span><span class="meta-dot">·</span><span>25 分钟</span><span class="meta-dot">·</span><span>6岁+</span>
+              </div>
+            </div>
+          </div>
+          <!-- Raven 瑞文 -->
+          <div class="test-card" data-test="raven" tabindex="0" role="button" aria-label="瑞文推理测验">
+            <div class="test-card-bg" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"></div>
+            <div class="test-card-content">
+              <span class="test-icon">🔷</span>
+              <h3>瑞文推理测验</h3>
+              <p class="test-desc">参考瑞文标准推理测验(SPM)，全图形模式识别，不受语言文化影响</p>
+              <div class="test-meta">
+                <span>36 题</span><span class="meta-dot">·</span><span>30 分钟</span><span class="meta-dot">·</span><span>6岁+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 提醒页 ========== -->
+    <div id="reminder" class="page">
+      <div class="card reminder-card">
+        <div class="reminder-icon" id="reminderIcon">📋</div>
+        <h2 id="reminderTitle">答题须知</h2>
+        <ul class="reminder-list" id="reminderList"></ul>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="backToSelectorBtn">返回选择</button>
+          <button class="btn btn-primary" id="readyBtn">准备好了，开始答题</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 答题页 ========== -->
+    <div id="quiz" class="page">
+      <div class="card quiz-card">
+        <div class="quiz-header">
+          <div class="quiz-meta">
+            <span class="badge" id="categoryBadge">VCI · 类同</span>
+            <span id="questionIndex">1 / 30</span>
+            <span class="timer" id="timerDisplay">25:00</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+        <div id="questionContainer">
+          <p class="question-text" id="questionText">Loading...</p>
+          <div class="options" id="optionsContainer"></div>
+        </div>
+        <div class="quiz-footer">
+          <button class="btn btn-secondary" id="prevBtn" disabled>上一题</button>
+          <span id="questionNum" class="q-num">第 1 题</span>
+          <button class="btn btn-primary" id="nextBtn">下一题</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 超时页 ========== -->
+    <div id="timeout" class="page">
+      <div class="card result-card">
+        <div class="timeout-icon">⏰</div>
+        <h2>答题时间已到</h2>
+        <p class="timeout-text">系统将提交你已完成的答案。</p>
+        <button class="btn btn-primary" id="timeoutResultBtn">查看结果</button>
+      </div>
+    </div>
+
+    <!-- ========== 结果页 ========== -->
+    <div id="result" class="page">
+      <div class="card result-card">
+        <h2 id="resultTitle">测评结果</h2>
+
+        <!-- FSIQ -->
+        <div class="result-main">
+          <div class="result-icon-big" id="resultIcon">🧠</div>
+          <h3>总智商 (FSIQ)</h3>
+          <div class="score-ring">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" class="ring-bg"/>
+              <circle cx="60" cy="60" r="52" class="ring-fill" id="iqRing"/>
+            </svg>
+            <span class="score-value" id="iqScore">0</span>
+          </div>
+          <p class="score-label" id="iqLabel">分析中...</p>
+          <p class="score-desc" id="iqDesc"></p>
+        </div>
+
+        <!-- 指数条形图 (适用于WAIS/WISC/Binet) -->
+        <div class="index-scores" id="indexScoresSection">
+          <h3 id="indexSectionTitle">各维度分数</h3>
+          <div class="index-bar-group" id="indexBarGroup"></div>
+        </div>
+
+        <!-- 各题详情 -->
+        <div class="result-detail">
+          <h4>答题详情</h4>
+          <div id="detailList"></div>
+        </div>
+
+        <!-- 错题汇总 -->
+        <div class="error-analysis" id="errorAnalysisSection">
+          <h4>错题汇总与分析</h4>
+          <div id="errorSummary" class="error-summary"></div>
+          <div id="errorList" class="error-list"></div>
+        </div>
+
+        <!-- 综合结论 -->
+        <div class="conclusion-card">
+          <h3>综合结论</h3>
+          <div id="profileText" class="conclusion-text"></div>
+          <div id="recommendText" class="conclusion-text" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="result-actions" style="gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="resultBackBtn">返回首页</button>
+          <button class="btn btn-primary" id="restartBtn">重新测试</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <svg style="width:0;height:0;">
+    <defs>
+      <linearGradient id="iqGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#667eea"/>
+        <stop offset="100%" stop-color="#764ba2"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- 测试数据：按需加载 -->
+  <script src="js/data-wais.js"></script>
+  <script src="js/data-wisc.js"></script>
+  <script src="js/data-binet.js"></script>
+  <script src="js/data-raven.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>
