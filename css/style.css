@@ -418,3 +418,72 @@ body {
   .quiz-footer .btn { width: 100%; }
   .q-num { display: none; }
 }
+
+/* Affiliate recommendations */
+.affiliate-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e8e8f0;
+}
+.affiliate-section h4 {
+  font-size: 13px;
+  color: #999;
+  font-weight: 500;
+  margin-bottom: 14px;
+  letter-spacing: 0.5px;
+}
+.affiliate-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.affiliate-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #f7f8fc;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.affiliate-item:hover {
+  background: #eef0f8;
+  transform: translateY(-1px);
+}
+.affiliate-item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.affiliate-item-text {
+  flex: 1;
+  min-width: 0;
+}
+.affiliate-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.3;
+}
+.affiliate-item-desc {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+.affiliate-tag {
+  font-size: 10px;
+  color: #667eea;
+  background: rgba(102,126,234,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+@media (max-width: 500px) {
+  .affiliate-grid { grid-template-columns: 1fr; }
+}
