@@ -628,6 +628,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Navigation
   $('prevBtn').addEventListener('click', goPrev);
+  $('homeBtn').addEventListener('click', () => {
+    if (!currentTest) return;
+    const answered = answers.filter(a => a !== -1).length;
+    if (answered === 0 || confirm(t('home.confirm'))) {
+      stopTimer();
+      showPage('selector');
+    }
+  });
 
   // Timeout
   $('timeoutResultBtn').addEventListener('click', submitQuiz);

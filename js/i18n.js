@@ -94,6 +94,7 @@ TRANSLATIONS['zh-CN'] = {
   'affiliate.title': '— 推荐阅读 · 提升认知 —',
   'affiliate.go': '去看看',
   'lang.label': '语言',
+  'home.confirm': '确定要返回首页吗？当前进度将丢失。',
 };
 
 // ---- English ----
@@ -173,6 +174,7 @@ TRANSLATIONS['en'] = {
   'affiliate.title': '— Recommended Reading —',
   'affiliate.go': 'Learn More',
   'lang.label': 'Language',
+  'home.confirm': 'Return to home? Your progress will be lost.',
 };
 
 // ---- Español ----

@@ -152,6 +152,20 @@ body {
   margin-bottom: 10px;
 }
 
+.btn-home {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  line-height: 1;
+  margin-left: 4px;
+}
+.btn-home:hover { background: #e8e8f0; }
+.btn-home:active { background: #dddde8; }
+
 .badge {
   padding: 4px 12px;
   border-radius: 20px;
@@ -469,6 +483,7 @@ body {
   .quiz-meta { flex-wrap: wrap; gap: 6px; }
   .badge { font-size: 11px; padding: 3px 10px; }
   .timer { font-size: 14px; padding: 3px 10px; margin-left: auto; }
+  .btn-home { font-size: 18px; padding: 4px; }
   .progress-bar { height: 4px; }
   .question-text { font-size: 15px; min-height: 40px; line-height: 1.6; }
   .option {
@@ -555,6 +570,7 @@ body {
   .index-label { width: 60px; font-size: 10px; }
   .badge { font-size: 10px; padding: 2px 8px; }
   .timer { font-size: 12px; padding: 2px 8px; }
+  .btn-home { font-size: 16px; padding: 2px; }
   .selector-logo { font-size: 32px; }
   .selector-header h1 { font-size: 18px; }
   .result-card h2 { font-size: 15px; }
