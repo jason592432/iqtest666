@@ -59,6 +59,31 @@ let timerInterval = null;
 let isSubmitted = false;
 let autoJumpTimer = null;
 
+// ---- i18n helpers for questions ----
+function qText(q) {
+  return currentLangCode === 'zh-CN' ? q.question : (q.questionEn || q.question);
+}
+function oText(q, i) {
+  if (currentLangCode === 'zh-CN') return q.options[i];
+  return (q.optionsEn && q.optionsEn[i]) || q.options[i];
+}
+function eText(q) {
+  return currentLangCode === 'zh-CN' ? q.explanation : (q.explanationEn || q.explanation);
+}
+function sText(q) {
+  const s = currentLangCode === 'zh-CN' ? (q.subtest || '') : (q.subtestEn || q.subtest || '');
+  return s;
+}
+
+const difficultyMap = {
+  'zh-CN': { '易': '易', '中易': '中易', '中': '中', '中难': '中难', '难': '难' },
+  'en': { '易': 'Easy', '中易': 'Easy-Med', '中': 'Medium', '中难': 'Med-Hard', '难': 'Hard' }
+};
+function dText(d) {
+  const map = (currentLangCode === 'zh-CN' ? difficultyMap['zh-CN'] : difficultyMap['en']);
+  return map[d] || d;
+}
+
 // ---- Helpers ----
 function showPage(name) {
   Object.values(pages).forEach(p => p.classList.remove('active'));
@@ -137,10 +162,11 @@ function renderQuestion() {
   if (els.categoryBadge) {
     if (q.type && currentTest.indexConfig) {
       const cfg = currentTest.indexConfig[q.type];
-      els.categoryBadge.textContent = (cfg ? cfg.short || q.type : q.type) + ' · ' + (q.subtest || '');
+      const badgeType = currentLangCode === 'zh-CN' ? (cfg ? cfg.short || q.type : q.type) : (cfg ? cfg.shortEn || cfg.short || q.type : q.type);
+      els.categoryBadge.textContent = badgeType + ' · ' + sText(q);
       els.categoryBadge.style.display = 'inline';
     } else if (q.subtest) {
-      els.categoryBadge.textContent = q.subtest;
+      els.categoryBadge.textContent = sText(q);
       els.categoryBadge.style.display = 'inline';
     } else {
       els.categoryBadge.style.display = 'none';
@@ -150,7 +176,7 @@ function renderQuestion() {
   if (els.questionIndex) els.questionIndex.textContent = `${currentIndex + 1} / ${total}`;
   if (els.progressFill) els.progressFill.style.width = `${((currentIndex + 1) / total) * 100}%`;
   if (els.questionNum) els.questionNum.textContent = t('quiz.question', { n: currentIndex + 1 });
-  if (els.questionText) els.questionText.textContent = q.question;
+  if (els.questionText) els.questionText.textContent = qText(q);
 
   // Options
   if (els.optionsContainer) {
@@ -160,7 +186,7 @@ function renderQuestion() {
       btn.type = 'button';
       btn.className = 'option' + (answers[currentIndex] === i ? ' selected' : '');
       const label = q.options.length <= 6 ? optLabels[i] + '. ' : '';
-      btn.textContent = label + opt;
+      btn.textContent = label + oText(q, i);
       btn.addEventListener('click', () => selectOption(i));
       els.optionsContainer.appendChild(btn);
     });
@@ -266,7 +292,7 @@ function showResult() {
   if (els.categoryBadge) els.categoryBadge.style.display = 'none';
 
   // i18n for result page
-  if (els.resultTitle) els.resultTitle.textContent = currentTest.name + ' · ' + t('result.title');
+  if (els.resultTitle) els.resultTitle.textContent = (currentLangCode === 'zh-CN' ? currentTest.name : (currentTest.nameEn || currentTest.name)) + ' · ' + t('result.title');
   const fsiqLabel = document.getElementById('resultFsiqLabel');
   if (fsiqLabel) fsiqLabel.textContent = t('result.fsiq');
   const indexTitle = els.indexSectionTitle;
@@ -292,21 +318,23 @@ function showResult() {
   }, 100);
 
   animateNumber(els.iqScore, result.fsiq);
-  if (els.iqLabel) els.iqLabel.textContent = (currentTest.getLabel || defaultGetLabel)(result.fsiq);
-  if (els.iqDesc) els.iqDesc.textContent = (currentTest.getDesc || defaultGetDesc)(result.fsiq);
+  const labelFn = currentLangCode === 'zh-CN' ? (currentTest.getLabel || defaultGetLabel) : (currentTest.getLabelEn || currentTest.getLabel || defaultGetLabel);
+  const descFn = currentLangCode === 'zh-CN' ? (currentTest.getDesc || defaultGetDesc) : (currentTest.getDescEn || currentTest.getDesc || defaultGetDesc);
+  if (els.iqLabel) els.iqLabel.textContent = labelFn(result.fsiq);
+  if (els.iqDesc) els.iqDesc.textContent = descFn(result.fsiq);
 
   // Index scores
   if (els.indexScoresSection) {
     if (currentTest.indexConfig && currentTest.hasIndexes !== false) {
       els.indexScoresSection.style.display = 'block';
-      if (els.indexSectionTitle) els.indexSectionTitle.textContent = currentTest.indexTitle || '各维度分数';
+      if (els.indexSectionTitle) els.indexSectionTitle.textContent = currentLangCode === 'zh-CN' ? (currentTest.indexTitle || '各维度分数') : (currentTest.indexTitleEn || currentTest.indexTitle || 'Index Scores');
       if (els.indexBarGroup) {
         els.indexBarGroup.innerHTML = '';
         let delay = 300;
         for (const [key, cfg] of Object.entries(currentTest.indexConfig)) {
           const score = result.indexScores[key] || 0;
           const pct = Math.min((score / 150) * 100, 95);
-          const label = cfg.label || key;
+          const label = currentLangCode === 'zh-CN' ? (cfg.label || key) : (cfg.labelEn || cfg.label || key);
           const color = cfg.color || '#667eea';
           const short = cfg.short || key;
 
@@ -359,8 +387,8 @@ function showResult() {
 
       div.innerHTML = `
         <span>
-          ${cfg ? '<span style="color:'+cfg.color+';font-weight:600;font-size:11px;">'+cfg.short+'</span> · ' : ''}
-          第${i + 1}题
+          ${cfg ? '<span style="color:'+cfg.color+';font-weight:600;font-size:11px;">'+(currentLangCode === 'zh-CN' ? cfg.short : (cfg.shortEn || cfg.short))+'</span> · ' : ''}
+          ${t('quiz.question', { n: i + 1 })}
         </span>
         ${statusHtml}
       `;
@@ -408,7 +436,8 @@ function showResult() {
         sHtml += '<div style="font-size:12px;color:#888;">' + t('error.difficulty') + '<span class="error-tag-group">';
         for (const [d, c] of Object.entries(errorByDifficulty)) {
           const cl = d === '易' ? '#27ae60' : (d === '中' || d === '中易' || d === '中难') ? '#e67e22' : '#e74c3c';
-          sHtml += '<span class="error-tag" style="color:'+cl+';background:'+cl+'18">'+d+'：'+c+'题</span>';
+          const diffLabel = currentLangCode === 'zh-CN' ? (d + '：' + c + '题') : (dText(d) + ': ' + c);
+          sHtml += '<span class="error-tag" style="color:'+cl+';background:'+cl+'18">'+diffLabel+'</span>';
         }
         sHtml += '</span></div>';
       }
@@ -432,13 +461,13 @@ function showResult() {
           const q = item.question;
           const ua = item.userAnswer;
           lHtml += '<div class="error-item">';
-          lHtml += '<div class="e-header"><span>第'+(item.idx+1)+'题</span><span style="font-weight:400;font-size:12px;color:#999;">'+(q.difficulty||'')+'</span></div>';
-          lHtml += '<div class="e-question">'+q.question.replace(/\n/g, '<br>')+'</div>';
+          lHtml += '<div class="e-header"><span>'+t('quiz.question', { n: item.idx + 1 })+'</span><span style="font-weight:400;font-size:12px;color:#999;">'+(dText(q.difficulty)||'')+'</span></div>';
+          lHtml += '<div class="e-question">'+qText(q).replace(/\n/g, '<br>')+'</div>';
           lHtml += '<div class="e-answers">';
-          lHtml += t('error.yourAnswer') + '<span class="e-wrong-ans">'+labels[ua]+'. '+q.options[ua]+'</span><br>';
-          lHtml += t('error.correctAnswer') + '<span class="e-correct-ans">'+labels[q.correct]+'. '+q.options[q.correct]+'</span>';
+          lHtml += t('error.yourAnswer') + '<span class="e-wrong-ans">'+labels[ua]+'. '+oText(q, ua)+'</span><br>';
+          lHtml += t('error.correctAnswer') + '<span class="e-correct-ans">'+labels[q.correct]+'. '+oText(q, q.correct)+'</span>';
           lHtml += '</div>';
-          if (q.explanation) lHtml += '<div class="e-explain">' + t('error.explanation') + q.explanation+'</div>';
+          if (q.explanation) lHtml += '<div class="e-explain">' + t('error.explanation') + eText(q)+'</div>';
           lHtml += '</div>';
         });
 
@@ -461,21 +490,12 @@ function showResult() {
   }
 
   // Profile & recommendation
-  if (els.profileText) els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' +
-    ((currentTest.getProfile || defaultGetProfile)(result, currentTest));
+  const profileFn = currentLangCode === 'zh-CN' ? (currentTest.getProfile || defaultGetProfile) : (currentTest.getProfileEn || currentTest.getProfile || defaultGetProfile);
+  const recFn = currentLangCode === 'zh-CN' ? (currentTest.getRecommendation || defaultGetRecommendation) : (currentTest.getRecommendationEn || currentTest.getRecommendation || defaultGetRecommendation);
+  if (els.profileText) els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' + profileFn(result, currentTest);
   if (els.recommendText) {
     const recLabel = currentLangCode === 'zh-CN' ? '发展建议：' :
-                     currentLangCode === 'en' ? 'Recommendation: ' :
-                     currentLangCode === 'es' ? 'Recomendación: ' :
-                     currentLangCode === 'fr' ? 'Recommandation: ' :
-                     currentLangCode === 'de' ? 'Empfehlung: ' :
-                     currentLangCode === 'pt' ? 'Recomendação: ' :
-                     currentLangCode === 'ru' ? 'Рекомендация: ' :
-                     currentLangCode === 'ja' ? 'アドバイス：' :
-                     currentLangCode === 'ko' ? '권장 사항: ' :
-                     currentLangCode === 'ar' ? 'توصية: ' : 'Recommendation: ';
-    els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' +
-      ((currentTest.getRecommendation || defaultGetRecommendation)(result, currentTest));
+                     currentLangCode === 'en' ? 'Recommendation: ' : 'Recommendation: ';
   }
 }
 
@@ -528,7 +548,7 @@ function setupReminder(testKey) {
   if (!testData) return;
 
   if (els.reminderIcon) els.reminderIcon.textContent = testData.icon || '📋';
-  if (els.reminderTitle) els.reminderTitle.textContent = testData.name + ' · ' + t('selector.title');
+  if (els.reminderTitle) els.reminderTitle.textContent = (currentLangCode === 'zh-CN' ? testData.name : (testData.nameEn || testData.name)) + ' · ' + t('selector.title');
 
   const n = testData.questions.length;
   const minutes = Math.floor((testData.timeLimit || 1500) / 60);
