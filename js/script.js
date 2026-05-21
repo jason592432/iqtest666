@@ -105,6 +105,13 @@ function stopTimer() {
 function handleTimeout() {
   if (isSubmitted) return;
   stopTimer();
+  // Update i18n
+  const timeoutTitle = document.querySelector('#timeout h2');
+  const timeoutText = document.querySelector('#timeout .timeout-text');
+  const timeoutBtn = $('timeoutResultBtn');
+  if (timeoutTitle) timeoutTitle.textContent = t('timeout.title');
+  if (timeoutText) timeoutText.textContent = t('timeout.text');
+  if (timeoutBtn) timeoutBtn.textContent = t('timeout.viewResult');
   showPage('timeout');
 }
 
@@ -142,7 +149,7 @@ function renderQuestion() {
 
   if (els.questionIndex) els.questionIndex.textContent = `${currentIndex + 1} / ${total}`;
   if (els.progressFill) els.progressFill.style.width = `${((currentIndex + 1) / total) * 100}%`;
-  if (els.questionNum) els.questionNum.textContent = `第 ${currentIndex + 1} 题`;
+  if (els.questionNum) els.questionNum.textContent = t('quiz.question', { n: currentIndex + 1 });
   if (els.questionText) els.questionText.textContent = q.question;
 
   // Options
@@ -258,8 +265,22 @@ function showResult() {
 
   if (els.categoryBadge) els.categoryBadge.style.display = 'none';
 
-  // Title
-  if (els.resultTitle) els.resultTitle.textContent = currentTest.name + ' · 测评结果';
+  // i18n for result page
+  if (els.resultTitle) els.resultTitle.textContent = currentTest.name + ' · ' + t('result.title');
+  const fsiqLabel = document.getElementById('resultFsiqLabel');
+  if (fsiqLabel) fsiqLabel.textContent = t('result.fsiq');
+  const indexTitle = els.indexSectionTitle;
+  if (indexTitle) indexTitle.textContent = t('result.indexTitle');
+  const detailTitle = document.querySelector('.result-detail h4');
+  if (detailTitle) detailTitle.textContent = t('result.detail');
+  const errorTitle = document.getElementById('errorAnalysisTitle');
+  if (errorTitle) errorTitle.textContent = t('result.errorAnalysis');
+  const profileTitle = document.getElementById('profileTitle');
+  if (profileTitle) profileTitle.textContent = t('result.profile');
+  const backBtn = $('resultBackBtn');
+  const restartBtn = $('restartBtn');
+  if (backBtn) backBtn.textContent = t('result.back');
+  if (restartBtn) restartBtn.textContent = t('result.restart');
   if (els.resultIcon) els.resultIcon.textContent = currentTest.icon || '🧠';
 
   // FSIQ ring
@@ -329,11 +350,11 @@ function showResult() {
 
       let statusHtml = '';
       if (ans === -1) {
-        statusHtml = '<span class="detail-wrong">未作答</span>';
+        statusHtml = '<span class="detail-wrong">' + t('detail.unanswered') + '</span>';
       } else if (isCorrect) {
-        statusHtml = '<span class="detail-correct">✓ +' + pts + '分</span>';
+        statusHtml = '<span class="detail-correct">' + t('detail.correct', { n: pts }) + '</span>';
       } else {
-        statusHtml = '<span class="detail-wrong">✗ 选' + optLabels[ans] + '（正解' + optLabels[q.correct] + '）</span>';
+        statusHtml = '<span class="detail-wrong">' + t('detail.wrong', { user: optLabels[ans], correct: optLabels[q.correct] }) + '</span>';
       }
 
       div.innerHTML = `
@@ -366,7 +387,7 @@ function showResult() {
     });
 
     if (wrongItems.length === 0) {
-      els.errorSummary.innerHTML = '<div style="text-align:center;padding:8px;color:#27ae60;font-weight:600;">🎉 全部答对，没有错题！</div>';
+      els.errorSummary.innerHTML = '<div style="text-align:center;padding:8px;color:#27ae60;font-weight:600;">' + t('error.allCorrect') + '</div>';
       els.errorList.innerHTML = '';
     } else {
       // Summary
@@ -375,16 +396,16 @@ function showResult() {
       const nWrong = wrongItems.length;
 
       let sHtml = '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:6px;">';
-      sHtml += '<div class="error-summary-stat"><span class="num green">' + result.correctCount + '</span><span class="label">正确</span></div>';
-      sHtml += '<div class="error-summary-stat"><span class="num red">' + nWrong + '</span><span class="label">错误</span></div>';
-      sHtml += '<div class="error-summary-stat"><span class="num" style="color:#999">' + result.unanswered + '</span><span class="label">未答</span></div>';
-      sHtml += '<div class="error-summary-stat"><span class="num" style="color:#1a1a2e">' + result.total + '</span><span class="label">总计</span></div>';
+      sHtml += '<div class="error-summary-stat"><span class="num green">' + result.correctCount + '</span><span class="label">' + t('error.correct') + '</span></div>';
+      sHtml += '<div class="error-summary-stat"><span class="num red">' + nWrong + '</span><span class="label">' + t('error.wrong') + '</span></div>';
+      sHtml += '<div class="error-summary-stat"><span class="num" style="color:#999">' + result.unanswered + '</span><span class="label">' + t('error.unanswered') + '</span></div>';
+      sHtml += '<div class="error-summary-stat"><span class="num" style="color:#1a1a2e">' + result.total + '</span><span class="label">' + t('error.total') + '</span></div>';
       sHtml += '</div>';
-      sHtml += '<div style="font-size:13px;color:#666;margin-bottom:6px;">正确率：<strong>' + accuracy + '%</strong>（' + result.correctCount + '/' + answered + ' 已答）</div>';
+      sHtml += '<div style="font-size:13px;color:#666;margin-bottom:6px;">' + t('error.accuracy', { p: accuracy, c: result.correctCount, a: answered }) + '</div>';
 
       // Tags
       if (Object.keys(errorByDifficulty).length > 0) {
-        sHtml += '<div style="font-size:12px;color:#888;">难度分布：<span class="error-tag-group">';
+        sHtml += '<div style="font-size:12px;color:#888;">' + t('error.difficulty') + '<span class="error-tag-group">';
         for (const [d, c] of Object.entries(errorByDifficulty)) {
           const cl = d === '易' ? '#27ae60' : (d === '中' || d === '中易' || d === '中难') ? '#e67e22' : '#e74c3c';
           sHtml += '<span class="error-tag" style="color:'+cl+';background:'+cl+'18">'+d+'：'+c+'题</span>';
@@ -392,7 +413,7 @@ function showResult() {
         sHtml += '</span></div>';
       }
       if (currentTest.indexConfig && Object.keys(errorsByDomain).length > 0) {
-        sHtml += '<div style="font-size:12px;color:#888;margin-top:4px;">维度分布：<span class="error-tag-group">';
+        sHtml += '<div style="font-size:12px;color:#888;margin-top:4px;">' + t('error.domain') + '<span class="error-tag-group">';
         for (const [t, c] of Object.entries(errorsByDomain)) {
           const cfg = currentTest.indexConfig[t];
           if (!cfg) continue;
@@ -414,14 +435,14 @@ function showResult() {
           lHtml += '<div class="e-header"><span>第'+(item.idx+1)+'题</span><span style="font-weight:400;font-size:12px;color:#999;">'+(q.difficulty||'')+'</span></div>';
           lHtml += '<div class="e-question">'+q.question.replace(/\n/g, '<br>')+'</div>';
           lHtml += '<div class="e-answers">';
-          lHtml += '你的答案：<span class="e-wrong-ans">'+labels[ua]+'. '+q.options[ua]+'</span><br>';
-          lHtml += '正确答案：<span class="e-correct-ans">'+labels[q.correct]+'. '+q.options[q.correct]+'</span>';
+          lHtml += t('error.yourAnswer') + '<span class="e-wrong-ans">'+labels[ua]+'. '+q.options[ua]+'</span><br>';
+          lHtml += t('error.correctAnswer') + '<span class="e-correct-ans">'+labels[q.correct]+'. '+q.options[q.correct]+'</span>';
           lHtml += '</div>';
-          if (q.explanation) lHtml += '<div class="e-explain">解析：'+q.explanation+'</div>';
+          if (q.explanation) lHtml += '<div class="e-explain">' + t('error.explanation') + q.explanation+'</div>';
           lHtml += '</div>';
         });
 
-        lHtml += '<button class="error-toggle" id="errorToggleBtn">展开查看全部 ' + nWrong + ' 道错题</button>';
+        lHtml += '<button class="error-toggle" id="errorToggleBtn">' + t('error.expand', { n: nWrong }) + '</button>';
         els.errorList.style.display = 'block';
         els.errorList.innerHTML = lHtml;
 
@@ -432,7 +453,7 @@ function showResult() {
           tBtn.addEventListener('click', () => {
             const hidden = items[0] && items[0].style.display === 'none';
             items.forEach(el => el.style.display = hidden ? '' : 'none');
-            tBtn.textContent = hidden ? '收起错题列表' : '展开查看全部 ' + nWrong + ' 道错题';
+            tBtn.textContent = hidden ? t('error.collapse') : t('error.expand', { n: nWrong });
           });
         }
       }
@@ -440,10 +461,22 @@ function showResult() {
   }
 
   // Profile & recommendation
-  if (els.profileText) els.profileText.innerHTML = '<strong>能力轮廓：</strong>' +
+  if (els.profileText) els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' +
     ((currentTest.getProfile || defaultGetProfile)(result, currentTest));
-  if (els.recommendText) els.recommendText.innerHTML = '<strong>发展建议：</strong>' +
-    ((currentTest.getRecommendation || defaultGetRecommendation)(result, currentTest));
+  if (els.recommendText) {
+    const recLabel = currentLangCode === 'zh-CN' ? '发展建议：' :
+                     currentLangCode === 'en' ? 'Recommendation: ' :
+                     currentLangCode === 'es' ? 'Recomendación: ' :
+                     currentLangCode === 'fr' ? 'Recommandation: ' :
+                     currentLangCode === 'de' ? 'Empfehlung: ' :
+                     currentLangCode === 'pt' ? 'Recomendação: ' :
+                     currentLangCode === 'ru' ? 'Рекомендация: ' :
+                     currentLangCode === 'ja' ? 'アドバイス：' :
+                     currentLangCode === 'ko' ? '권장 사항: ' :
+                     currentLangCode === 'ar' ? 'توصية: ' : 'Recommendation: ';
+    els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' +
+      ((currentTest.getRecommendation || defaultGetRecommendation)(result, currentTest));
+  }
 }
 
 function animateNumber(el, target) {
@@ -459,33 +492,34 @@ function animateNumber(el, target) {
 
 // ---- Default analysis functions ----
 function defaultGetLabel(iq) {
-  if (iq >= 130) return '非常优秀'; if (iq >= 120) return '优秀';
-  if (iq >= 110) return '中上'; if (iq >= 90) return '中等';
-  if (iq >= 80) return '中下'; if (iq >= 70) return '临界';
-  return '待提升';
+  if (iq >= 130) return t('iq.veryHigh'); if (iq >= 120) return t('iq.high');
+  if (iq >= 110) return t('iq.aboveAvg'); if (iq >= 90) return t('iq.average');
+  if (iq >= 80) return t('iq.belowAvg'); if (iq >= 70) return t('iq.borderline');
+  return t('iq.improve');
 }
 function defaultGetDesc(iq) {
-  if (iq >= 130) return '智力水平非常优秀（人群中约占2%），认知能力全面出色。';
-  if (iq >= 120) return '智力水平高于大部分人群（约占10%），学习和问题解决能力强。';
-  if (iq >= 110) return '智力水平中上，认知功能良好，学习效率较高。';
-  if (iq >= 90) return '智力水平处于正常范围，各项认知能力均衡。';
-  if (iq >= 80) return '智力水平中下，部分领域有提升空间。';
-  return '测试分数偏低，可能受状态影响，建议休息后重测。';
+  if (iq >= 130) return t('iq.desc.veryHigh');
+  if (iq >= 120) return t('iq.desc.high');
+  if (iq >= 110) return t('iq.desc.aboveAvg');
+  if (iq >= 90) return t('iq.desc.average');
+  if (iq >= 80) return t('iq.desc.belowAvg');
+  if (iq >= 70) return t('iq.desc.borderline');
+  return t('iq.desc.improve');
 }
 function defaultGetProfile(result) {
   if (!result.indexScores || Object.keys(result.indexScores).length === 0) {
-    return '本次测试主要评估抽象推理能力。';
+    return t('profile.general');
   }
   const entries = Object.entries(result.indexScores).sort((a, b) => b[1] - a[1]);
   const highest = entries[0]; const lowest = entries[entries.length - 1];
   const gap = highest[1] - lowest[1];
-  if (gap < 10) return '各认知维度水平接近，发展均衡。';
-  if (gap < 20) return highest[0] + '略高于' + lowest[0] + '，差异在正常范围内。';
-  return highest[0] + '（' + highest[1] + '分）为优势维度，' + lowest[0] + '（' + lowest[1] + '分）有提升空间，相差' + gap + '分。';
+  if (gap < 10) return t('profile.balanced');
+  if (gap < 20) return t('profile.slightGap', { high: highest[0], low: lowest[0] });
+  return t('profile.significantGap', { high: highest[0], hScore: highest[1], low: lowest[0], lScore: lowest[1], gap });
 }
 function defaultGetRecommendation(result) {
-  if (result.fsiq >= 130) return '建议在擅长的领域持续深耕，挑战跨学科任务，充分发挥认知潜力。';
-  return '建议保持多样化的学习和思维训练，均衡发展各项认知能力。';
+  if (result.fsiq >= 130) return t('rec.high');
+  return t('rec.normal');
 }
 
 // ---- Set reminder ----
@@ -494,25 +528,80 @@ function setupReminder(testKey) {
   if (!testData) return;
 
   if (els.reminderIcon) els.reminderIcon.textContent = testData.icon || '📋';
-  if (els.reminderTitle) els.reminderTitle.textContent = testData.name + ' · 答题须知';
+  if (els.reminderTitle) els.reminderTitle.textContent = testData.name + ' · ' + t('selector.title');
 
-  const items = testData.reminderItems || [
-    '本测试共 <strong>' + testData.questions.length + '</strong> 道题',
-    '时限 <strong>' + Math.floor((testData.timeLimit || 1500) / 60) + '</strong> 分钟',
-    '每道题有多个选项，选择你认为最正确的答案',
-    '答题过程中可以返回修改之前的答案',
-    '超时系统将自动提交已答题目',
-    '建议在安静、无干扰的环境下一次性完成',
-    '<strong>注意：</strong>测试结果仅供参考，不能作为临床评估依据'
+  const n = testData.questions.length;
+  const minutes = Math.floor((testData.timeLimit || 1500) / 60);
+  const items = [
+    t('reminder.item1', { n }),
+    t('reminder.item2', { n: minutes }),
+    t('reminder.item3'),
+    t('reminder.item4'),
+    t('reminder.item5'),
+    t('reminder.item6'),
+    t('reminder.item7')
   ];
 
   if (els.reminderList) {
     els.reminderList.innerHTML = items.map(item => '<li>' + item + '</li>').join('');
   }
+
+  // Update buttons
+  const backBtn = $('backToSelectorBtn');
+  const readyBtn = $('readyBtn');
+  if (backBtn) backBtn.textContent = t('reminder.back');
+  if (readyBtn) readyBtn.textContent = t('reminder.start');
+}
+
+// ---- i18n: render selector with current language ----
+function renderSelector() {
+  document.getElementById('selectorTitle').textContent = t('selector.title');
+  document.getElementById('selectorSubtitle').textContent = t('selector.subtitle');
+  document.querySelectorAll('.test-card').forEach(card => {
+    const test = card.dataset.test;
+    if (!test) return;
+    const nameEl = card.querySelector('.test-card-name');
+    const descEl = card.querySelector('.test-desc');
+    const metaEl = card.querySelector('.test-meta');
+    if (nameEl) nameEl.textContent = t(test + '.name');
+    if (descEl) descEl.textContent = t(test + '.desc');
+    if (metaEl) metaEl.innerHTML = t(test + '.meta');
+    card.setAttribute('aria-label', t(test + '.name'));
+  });
+  // Affiliate section
+  const affiliateTitle = document.querySelector('.affiliate-section h4');
+  if (affiliateTitle) affiliateTitle.textContent = t('affiliate.title');
+  document.querySelectorAll('.affiliate-tag').forEach(el => {
+    el.textContent = t('affiliate.go');
+  });
+  // Lang label in the select
+  // Update prev button
+  const prevBtn = $('prevBtn');
+  if (prevBtn && pages.quiz.classList.contains('active')) prevBtn.textContent = t('quiz.prev');
+  // Update reminder buttons if visible
+  const backBtn = $('backToSelectorBtn');
+  const readyBtn = $('readyBtn');
+  if (backBtn) backBtn.textContent = t('reminder.back');
+  if (readyBtn) readyBtn.textContent = t('reminder.start');
 }
 
 // ---- Event listeners ----
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize language selector
+  const langSelect = document.getElementById('langSelect');
+  if (langSelect) {
+    SUPPORTED_LANGUAGES.forEach(lang => {
+      const opt = document.createElement('option');
+      opt.value = lang.code;
+      opt.textContent = lang.name;
+      langSelect.appendChild(opt);
+    });
+    langSelect.value = getCurrentLang();
+    langSelect.addEventListener('change', (e) => {
+      setLanguage(e.target.value);
+    });
+  }
+  renderSelector();
   // Test card clicks
   document.querySelectorAll('.test-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -539,7 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Navigation
   $('prevBtn').addEventListener('click', goPrev);
-  $('nextBtn').addEventListener('click', goNext);
 
   // Timeout
   $('timeoutResultBtn').addEventListener('click', submitQuiz);
@@ -562,6 +650,5 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', (e) => {
     if (!pages.quiz.classList.contains('active')) return;
     if (e.key === 'ArrowLeft' && !$('prevBtn').disabled) goPrev();
-    if (e.key === 'ArrowRight' && !$('nextBtn').disabled) goNext();
   });
 });

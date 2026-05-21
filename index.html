@@ -12,10 +12,13 @@
     <!-- ========== 首页 - 测试选择 ========== -->
     <div id="selector" class="page active">
       <div class="card selector-card">
+        <div class="lang-selector">
+          <select id="langSelect" onchange="setLanguage(this.value)"></select>
+        </div>
         <div class="selector-header">
           <div class="selector-logo">🧠</div>
-          <h1>免费IQ智力测试</h1>
-          <p class="selector-subtitle">全球最权威三大智力量表</p>
+          <h1 id="selectorTitle">免费IQ智力测试</h1>
+          <p class="selector-subtitle" id="selectorSubtitle">全球最权威三大智力量表</p>
         </div>
         <div class="test-grid">
           <!-- WAIS 韦氏成人 -->
@@ -23,9 +26,9 @@
             <div class="test-card-bg" style="background:linear-gradient(135deg,#667eea,#764ba2)"></div>
             <div class="test-card-content">
               <span class="test-icon">🧑</span>
-              <h3>韦氏成人智力测验</h3>
-              <p class="test-desc">参考WAIS-IV架构，评估言语理解、知觉推理、工作记忆与加工速度</p>
-              <div class="test-meta">
+              <h3 class="test-card-name" data-test="wais">韦氏成人智力测验</h3>
+              <p class="test-desc" data-test="wais">参考WAIS-IV架构，评估言语理解、知觉推理、工作记忆与加工速度</p>
+              <div class="test-meta" data-test="wais">
                 <span>30 题</span><span class="meta-dot">·</span><span>25 分钟</span><span class="meta-dot">·</span><span>16岁+</span>
               </div>
             </div>
@@ -35,9 +38,9 @@
             <div class="test-card-bg" style="background:linear-gradient(135deg,#11998e,#38ef7d)"></div>
             <div class="test-card-content">
               <span class="test-icon">🧒</span>
-              <h3>韦氏儿童智力测验</h3>
-              <p class="test-desc">参考WISC-V架构，专为6-16岁儿童设计，评估核心认知能力</p>
-              <div class="test-meta">
+              <h3 class="test-card-name" data-test="wisc">韦氏儿童智力测验</h3>
+              <p class="test-desc" data-test="wisc">参考WISC-V架构，专为6-16岁儿童设计，评估核心认知能力</p>
+              <div class="test-meta" data-test="wisc">
                 <span>30 题</span><span class="meta-dot">·</span><span>25 分钟</span><span class="meta-dot">·</span><span>6-16岁</span>
               </div>
             </div>
@@ -47,9 +50,9 @@
             <div class="test-card-bg" style="background:linear-gradient(135deg,#f093fb,#f5576c)"></div>
             <div class="test-card-content">
               <span class="test-icon">📐</span>
-              <h3>斯坦福-比奈智力测试</h3>
-              <p class="test-desc">参考SB-5架构，评估流体推理、知识、数量推理、视觉空间与工作记忆</p>
-              <div class="test-meta">
+              <h3 class="test-card-name" data-test="binet">斯坦福-比奈智力测试</h3>
+              <p class="test-desc" data-test="binet">参考SB-5架构，评估流体推理、知识、数量推理、视觉空间与工作记忆</p>
+              <div class="test-meta" data-test="binet">
                 <span>30 题</span><span class="meta-dot">·</span><span>25 分钟</span><span class="meta-dot">·</span><span>6岁+</span>
               </div>
             </div>
@@ -59,9 +62,9 @@
             <div class="test-card-bg" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"></div>
             <div class="test-card-content">
               <span class="test-icon">🔷</span>
-              <h3>瑞文推理测验</h3>
-              <p class="test-desc">参考瑞文标准推理测验(SPM)，全图形模式识别，不受语言文化影响</p>
-              <div class="test-meta">
+              <h3 class="test-card-name" data-test="raven">瑞文推理测验</h3>
+              <p class="test-desc" data-test="raven">参考瑞文标准推理测验(SPM)，全图形模式识别，不受语言文化影响</p>
+              <div class="test-meta" data-test="raven">
                 <span>36 题</span><span class="meta-dot">·</span><span>30 分钟</span><span class="meta-dot">·</span><span>6岁+</span>
               </div>
             </div>
@@ -102,7 +105,6 @@
         </div>
         <div class="quiz-footer">
           <button class="btn btn-secondary" id="prevBtn" disabled>上一题</button>
-          <button class="btn btn-primary" id="nextBtn">下一题</button>
           <span id="questionNum" class="q-num">第 1 题</span>
         </div>
       </div>
@@ -126,7 +128,7 @@
         <!-- FSIQ -->
         <div class="result-main">
           <div class="result-icon-big" id="resultIcon">🧠</div>
-          <h3>总智商 (FSIQ)</h3>
+          <h3 id="resultFsiqLabel">总智商 (FSIQ)</h3>
           <div class="score-ring">
             <svg viewBox="0 0 120 120">
               <circle cx="60" cy="60" r="52" class="ring-bg"/>
@@ -146,20 +148,20 @@
 
         <!-- 各题详情 -->
         <div class="result-detail">
-          <h4>答题详情</h4>
+          <h4 id="detailTitle">答题详情</h4>
           <div id="detailList"></div>
         </div>
 
         <!-- 错题汇总 -->
         <div class="error-analysis" id="errorAnalysisSection">
-          <h4>错题汇总与分析</h4>
+          <h4 id="errorAnalysisTitle">错题汇总与分析</h4>
           <div id="errorSummary" class="error-summary"></div>
           <div id="errorList" class="error-list"></div>
         </div>
 
         <!-- 综合结论 -->
         <div class="conclusion-card">
-          <h3>综合结论</h3>
+          <h3 id="profileTitle">综合结论</h3>
           <div id="profileText" class="conclusion-text"></div>
           <div id="recommendText" class="conclusion-text" style="margin-top:12px;"></div>
         </div>
@@ -226,6 +228,7 @@
   <script src="js/data-wisc.js"></script>
   <script src="js/data-binet.js"></script>
   <script src="js/data-raven.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>
