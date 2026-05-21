@@ -648,3 +648,16 @@ body {
   border-radius: 4px;
   font-weight: 500;
 }
+.feedback-bar {
+  text-align: center;
+  padding: 20px 10px 30px;
+  font-size: 13px;
+  color: #8899aa;
+}
+.feedback-bar a {
+  color: #667eea;
+  text-decoration: none;
+}
+.feedback-bar a:hover {
+  text-decoration: underline;
+}
