@@ -194,6 +194,10 @@ function renderQuestion() {
 
   const prevBtn = $('prevBtn');
   if (prevBtn) prevBtn.disabled = currentIndex === 0;
+
+  // SEO: update page title
+  const testName = currentLangCode === 'zh-CN' ? currentTest.name : (currentTest.nameEn || currentTest.name);
+  document.title = testName + ' · ' + t('quiz.question', { n: currentIndex + 1 });
 }
 
 function selectOption(index) {
@@ -290,6 +294,10 @@ function showResult() {
   showPage('result');
 
   if (els.categoryBadge) els.categoryBadge.style.display = 'none';
+
+  // SEO: update page title
+  const testName = currentLangCode === 'zh-CN' ? currentTest.name : (currentTest.nameEn || currentTest.name);
+  document.title = t('result.title') + ' · ' + testName;
 
   // i18n for result page
   if (els.resultTitle) els.resultTitle.textContent = (currentLangCode === 'zh-CN' ? currentTest.name : (currentTest.nameEn || currentTest.name)) + ' · ' + t('result.title');
@@ -625,6 +633,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   renderSelector();
+
+  // Auto-start test if specified (for SEO sub-pages)
+  const autoTest = window.AUTO_START_TEST;
+  if (autoTest && TEST_REGISTRY[autoTest]) {
+    initQuiz(autoTest);
+    setupReminder(autoTest);
+    showPage('reminder');
+  }
+
   // Test card clicks
   document.querySelectorAll('.test-card').forEach(card => {
     card.addEventListener('click', () => {
