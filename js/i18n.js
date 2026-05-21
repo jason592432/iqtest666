@@ -95,6 +95,7 @@ TRANSLATIONS['zh-CN'] = {
   'affiliate.go': '去看看',
   'lang.label': '语言',
   'home.confirm': '确定要返回首页吗？当前进度将丢失。',
+  'home.btn': '返回首页',
 };
 
 // ---- English ----
@@ -175,6 +176,7 @@ TRANSLATIONS['en'] = {
   'affiliate.go': 'Learn More',
   'lang.label': 'Language',
   'home.confirm': 'Return to home? Your progress will be lost.',
+  'home.btn': 'Home',
 };
 
 // ---- Español ----

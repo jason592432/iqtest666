@@ -575,6 +575,9 @@ function renderSelector() {
     el.textContent = t('affiliate.go');
   });
   // Lang label in the select
+  // Update home button
+  const homeBtn = $('homeBtn');
+  if (homeBtn) homeBtn.textContent = t('home.btn');
   // Update prev button
   const prevBtn = $('prevBtn');
   if (prevBtn && pages.quiz.classList.contains('active')) prevBtn.textContent = t('quiz.prev');
