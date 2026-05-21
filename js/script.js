@@ -57,6 +57,7 @@ let answers = [];
 let timeLeft = 0;
 let timerInterval = null;
 let isSubmitted = false;
+let autoJumpTimer = null;
 
 // ---- Helpers ----
 function showPage(name) {
@@ -117,6 +118,7 @@ function initQuiz(testKey) {
   timeLeft = testData.timeLimit || 1500;
   isSubmitted = false;
   stopTimer();
+  if (autoJumpTimer) { clearTimeout(autoJumpTimer); autoJumpTimer = null; }
 }
 
 function renderQuestion() {
@@ -148,6 +150,7 @@ function renderQuestion() {
     els.optionsContainer.innerHTML = '';
     q.options.forEach((opt, i) => {
       const btn = document.createElement('button');
+      btn.type = 'button';
       btn.className = 'option' + (answers[currentIndex] === i ? ' selected' : '');
       const label = q.options.length <= 6 ? optLabels[i] + '. ' : '';
       btn.textContent = label + opt;
@@ -157,18 +160,28 @@ function renderQuestion() {
   }
 
   const prevBtn = $('prevBtn');
-  const nextBtn = $('nextBtn');
   if (prevBtn) prevBtn.disabled = currentIndex === 0;
-  if (nextBtn) nextBtn.textContent = currentIndex === total - 1 ? '提交答案' : '下一题';
 }
 
 function selectOption(index) {
   answers[currentIndex] = index;
   document.querySelectorAll('.option').forEach((el, i) => el.classList.toggle('selected', i === index));
+  // 自动跳转下一题
+  if (autoJumpTimer) clearTimeout(autoJumpTimer);
+  autoJumpTimer = setTimeout(() => {
+    autoJumpTimer = null;
+    if (currentIndex === currentTest.questions.length - 1) {
+      submitQuiz();
+    } else {
+      currentIndex++;
+      renderQuestion();
+    }
+  }, 300);
 }
 
 function goNext() {
   if (answers[currentIndex] === -1) return;
+  if (autoJumpTimer) clearTimeout(autoJumpTimer);
   if (currentIndex === currentTest.questions.length - 1) { submitQuiz(); return; }
   currentIndex++;
   renderQuestion();
@@ -176,6 +189,7 @@ function goNext() {
 
 function goPrev() {
   if (currentIndex === 0) return;
+  if (autoJumpTimer) clearTimeout(autoJumpTimer);
   currentIndex--;
   renderQuestion();
 }
@@ -524,8 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Navigation
-  $('nextBtn').addEventListener('click', goNext);
   $('prevBtn').addEventListener('click', goPrev);
+  $('nextBtn').addEventListener('click', goNext);
 
   // Timeout
   $('timeoutResultBtn').addEventListener('click', submitQuiz);
@@ -548,6 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', (e) => {
     if (!pages.quiz.classList.contains('active')) return;
     if (e.key === 'ArrowLeft' && !$('prevBtn').disabled) goPrev();
-    if (e.key === 'ArrowRight' || e.key === 'Enter') goNext();
+    if (e.key === 'ArrowRight' && !$('nextBtn').disabled) goNext();
   });
 });

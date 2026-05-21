@@ -194,11 +194,12 @@ body {
 
 .quiz-footer {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-top: 18px;
+  gap: 12px;
 }
-.q-num { font-size: 14px; color: #999; }
+.quiz-footer .btn { flex-shrink: 0; }
+.q-num { flex: 1; text-align: center; font-size: 14px; color: #999; }
 
 /* ===== Timeout ===== */
 .timeout-icon { font-size: 60px; text-align: center; margin-bottom: 14px; }
@@ -413,10 +414,23 @@ body {
   .test-card-content { padding: 16px; }
   h1 { font-size: 20px; }
   .question-text { font-size: 15px; }
+  .option { padding: 14px 14px; font-size: 14px; min-height: 44px; }
   .index-label { width: 85px; font-size: 12px; }
   .quiz-footer { flex-direction: column; gap: 8px; }
   .quiz-footer .btn { width: 100%; }
   .q-num { display: none; }
+  .timer { font-size: 14px; padding: 3px 10px; }
+  .badge { font-size: 11px; padding: 3px 10px; }
+  .result-icon-big { font-size: 40px; }
+  .score-ring { width: 100px; height: 100px; }
+  .result-card h2 { font-size: 18px; }
+  .selector-logo { font-size: 38px; }
+}
+@media (max-width: 380px) {
+  .card { padding: 18px 12px; }
+  .question-text { font-size: 14px; }
+  .option { font-size: 13px; padding: 12px 12px; }
+  .quiz-card { padding: 18px 12px; }
 }
 
 /* Affiliate recommendations */
