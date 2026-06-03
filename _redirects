@@ -1,12 +1,5 @@
-# Fix: Cloudflare Pages auto-strips .html suffix (clean URLs)
-# These 200 rewrite rules tell the edge: /wais = serve wais.html content
-# Without these, the edge strips .html → can't resolve → 308 self-loop
-
-/wais    /wais.html   200
-/wais/   /wais.html   200
-/wisc    /wisc.html   200
-/wisc/   /wisc.html   200
-/binet   /binet.html  200
-/binet/  /binet.html  200
-/raven   /raven.html  200
-/raven/  /raven.html  200
+# Redirect old .html URLs to clean URLs (directory-based)
+/wais.html  /wais  301
+/wisc.html  /wisc  301
+/binet.html /binet 301
+/raven.html /raven 301
