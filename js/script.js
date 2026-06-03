@@ -504,6 +504,7 @@ function showResult() {
   if (els.recommendText) {
     const recLabel = currentLangCode === 'zh-CN' ? '发展建议：' :
                      currentLangCode === 'en' ? 'Recommendation: ' : 'Recommendation: ';
+    els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' + recFn(result, currentTest);
   }
 }
 
