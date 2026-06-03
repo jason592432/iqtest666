@@ -1,4 +1,2 @@
-/wais   /wais.html   200
-/wisc   /wisc.html   200
-/binet  /binet.html   200
-/raven  /raven.html   200
+# Cloudflare Pages auto-serves clean URLs (e.g. /wais → wais.html)
+# No manual redirects needed for SEO pages
