@@ -700,4 +700,45 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pages.quiz.classList.contains('active')) return;
     if (e.key === 'ArrowLeft' && !$('prevBtn').disabled) goPrev();
   });
+
+  // ---- Bookmark ----
+  const bookmarkBtn = $('bookmarkBtn');
+  if (bookmarkBtn) {
+    bookmarkBtn.addEventListener('click', bookmarkSite);
+  }
 });
+
+// ---- Toast ----
+function showToast(msg) {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = '<span class="toast-icon">🔖</span>' + msg;
+  container.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
+}
+
+// ---- Bookmark site ----
+function bookmarkSite() {
+  const url = window.location.href;
+  const title = document.title;
+  // IE / Edge Legacy
+  if (window.external && window.external.AddFavorite) {
+    window.external.AddFavorite(url, title);
+    return;
+  }
+  // Old Firefox (sidebar)
+  if (window.sidebar && window.sidebar.addPanel) {
+    window.sidebar.addPanel(title, url, '');
+    return;
+  }
+  // Chrome, Safari, Firefox, Edge (Chromium) — show keyboard shortcut toast
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const key = isMac ? 'Cmd+D' : 'Ctrl+D';
+  showToast(t('bookmark.tip').replace('Ctrl+D', key));
+}

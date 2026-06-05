@@ -96,6 +96,8 @@ TRANSLATIONS['zh-CN'] = {
   'lang.label': '语言',
   'home.confirm': '确定要返回首页吗？当前进度将丢失。',
   'home.btn': '返回首页',
+  'bookmark.text': '收藏本站',
+  'bookmark.tip': '按 Ctrl+D 将本站加入浏览器收藏夹',
 };
 
 // ---- English ----
@@ -177,6 +179,8 @@ TRANSLATIONS['en'] = {
   'lang.label': 'Language',
   'home.confirm': 'Return to home? Your progress will be lost.',
   'home.btn': 'Home',
+  'bookmark.text': 'Bookmark',
+  'bookmark.tip': 'Press Ctrl+D to bookmark this page',
 };
 
 // ---- Español ----
@@ -256,6 +260,8 @@ TRANSLATIONS['es'] = {
   'affiliate.title': '— Lectura Recomendada —',
   'affiliate.go': 'Saber Más',
   'lang.label': 'Idioma',
+  'bookmark.text': 'Marcador',
+  'bookmark.tip': 'Presiona Ctrl+D para marcar esta página',
 };
 
 // ---- Français ----
@@ -335,6 +341,8 @@ TRANSLATIONS['fr'] = {
   'affiliate.title': '— Lectures Recommandées —',
   'affiliate.go': 'En Savoir Plus',
   'lang.label': 'Langue',
+  'bookmark.text': 'Marquer',
+  'bookmark.tip': 'Appuyez sur Ctrl+D pour marquer cette page',
 };
 
 // ---- Deutsch ----
@@ -414,6 +422,8 @@ TRANSLATIONS['de'] = {
   'affiliate.title': '— Empfohlene Lektüre —',
   'affiliate.go': 'Mehr erfahren',
   'lang.label': 'Sprache',
+  'bookmark.text': 'Lesezeichen',
+  'bookmark.tip': 'Drücken Sie Strg+D für ein Lesezeichen',
 };
 
 // ---- Português ----
@@ -486,6 +496,8 @@ TRANSLATIONS['pt'] = {
   'affiliate.title': '— Leitura Recomendada —',
   'affiliate.go': 'Saiba Mais',
   'lang.label': 'Idioma',
+  'bookmark.text': 'Favorito',
+  'bookmark.tip': 'Pressione Ctrl+D para favoritar',
 };
 
 // ---- Русский ----
@@ -554,6 +566,8 @@ TRANSLATIONS['ru'] = {
   'affiliate.title': '— Рекомендуемое чтение —',
   'affiliate.go': 'Узнать больше',
   'lang.label': 'Язык',
+  'bookmark.text': 'Закладка',
+  'bookmark.tip': 'Нажмите Ctrl+D чтобы добавить в закладки',
 };
 
 // ---- 日本語 ----
@@ -622,6 +636,8 @@ TRANSLATIONS['ja'] = {
   'affiliate.title': '— おすすめ読書 —',
   'affiliate.go': '詳しく見る',
   'lang.label': '言語',
+  'bookmark.text': 'ブックマーク',
+  'bookmark.tip': 'Ctrl+Dでこのページをブックマーク',
 };
 
 // ---- 한국어 ----
@@ -690,6 +706,8 @@ TRANSLATIONS['ko'] = {
   'affiliate.title': '— 추천 도서 —',
   'affiliate.go': '자세히 보기',
   'lang.label': '언어',
+  'bookmark.text': '즐겨찾기',
+  'bookmark.tip': 'Ctrl+D를 눌러 즐겨찾기에 추가',
 };
 
 // ---- العربية ----
@@ -758,6 +776,8 @@ TRANSLATIONS['ar'] = {
   'affiliate.title': '— قراءات موصى بها —',
   'affiliate.go': 'اعرف المزيد',
   'lang.label': 'اللغة',
+  'bookmark.text': 'إشارة مرجعية',
+  'bookmark.tip': 'اضغط Ctrl+D للإشارة المرجعية',
 };
 
 // ---- Current language state ----
