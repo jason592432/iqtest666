@@ -226,6 +226,15 @@ var _hmt = _hmt || [];
 
         <p class="disclaimer">⚠️ 本测试为趣味性评估工具，基于经典推理题型设计，<strong>仅供参考，不构成心理或医学诊断</strong>。</p>
 
+        <!-- 分享区 -->
+        <div class="share-section">
+          <p>📤 <span data-i18n="share.title">分享你的测评结果</span></p>
+          <div class="share-btns">
+            <button class="share-btn share-btn-poster" id="posterBtn">🖼️ <span data-i18n="share.poster">生成海报</span></button>
+            <button class="share-btn share-btn-copy" id="copyLinkBtn">🔗 <span data-i18n="share.copy">复制链接</span></button>
+          </div>
+        </div>
+
         <!-- 推广推荐 -->
         <div class="affiliate-section">
           <h4>— 推荐阅读 · 提升认知 —</h4>
@@ -268,6 +277,8 @@ var _hmt = _hmt || [];
     </div>
 
   </div>
+
+  <canvas id="posterCanvas" style="display:none;"></canvas>
 
   <div class="feedback-bar">
     <span id="bookmarkBtn" class="bookmark-btn">🔖 <span data-i18n="bookmark.text">收藏本站</span></span>

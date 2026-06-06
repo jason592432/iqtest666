@@ -706,6 +706,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (bookmarkBtn) {
     bookmarkBtn.addEventListener('click', bookmarkSite);
   }
+
+  // ---- Share & Poster ----
+  $('posterBtn').addEventListener('click', drawIQPoster);
+  $('copyLinkBtn').addEventListener('click', copyResultLink);
 });
 
 // ---- Toast ----
@@ -741,4 +745,116 @@ function bookmarkSite() {
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const key = isMac ? 'Cmd+D' : 'Ctrl+D';
   showToast(t('bookmark.tip').replace('Ctrl+D', key));
+}
+
+// ---- Copy result link ----
+function copyResultLink() {
+  const url = window.location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url + '?from=share').then(() => {
+      showToast('✅ ' + t('share.copied'));
+    }).catch(() => {
+      fallbackCopy(url);
+    });
+  } else {
+    fallbackCopy(url);
+  }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast('✅ ' + t('share.copied')); }
+  catch(e) { showToast('⚠️ 复制失败，请手动复制链接'); }
+  document.body.removeChild(ta);
+}
+
+// ---- Generate IQ poster ----
+function drawIQPoster() {
+  const canvas = $('posterCanvas');
+  if (!canvas) return;
+  const iq = els.iqScore ? parseInt(els.iqScore.textContent) : 100;
+  const label = els.iqLabel ? els.iqLabel.textContent : '';
+  const ctx = canvas.getContext('2d');
+  const W = 600, H = 850;
+  canvas.width = W; canvas.height = H;
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#1a1a2e');
+  grad.addColorStop(0.5, '#16213e');
+  grad.addColorStop(1, '#0f3460');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Decorative circles
+  ctx.fillStyle = 'rgba(102,126,234,0.08)';
+  ctx.beginPath(); ctx.arc(520, 120, 180, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(118,75,162,0.08)';
+  ctx.beginPath(); ctx.arc(80, 700, 140, 0, Math.PI*2); ctx.fill();
+
+  // Header bar
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(0, 0, W, 60);
+  ctx.fillStyle = '#8899bb';
+  ctx.font = '16px -apple-system, "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(t('share.posterTitle'), W/2, 38);
+
+  // Brain emoji as text
+  ctx.font = '80px sans-serif';
+  ctx.fillStyle = '#667eea';
+  ctx.textAlign = 'center';
+  ctx.fillText('🧠', W/2, 200);
+
+  // Score number
+  ctx.font = 'bold 96px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText(iq.toString(), W/2, 310);
+
+  // Score label
+  ctx.font = '28px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#aabbee';
+  ctx.fillText(label, W/2, 360);
+
+  // Divider line
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(100, 400); ctx.lineTo(500, 400); ctx.stroke();
+
+  // Personalized message
+  let msg = '';
+  if (iq >= 130) msg = '大脑超频中，请勿轻易挑战 🚀';
+  else if (iq >= 120) msg = '逻辑能力在线，已经超越了大部分人 💪';
+  else if (iq >= 110) msg = '脑子转得挺快，继续保持 🧠';
+  else if (iq >= 90) msg = '大脑运行正常，状态不错 😊';
+  else msg = '今天可能不在状态，改天再试试 😅';
+
+  ctx.font = '20px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#99aacc';
+  ctx.textAlign = 'center';
+  ctx.fillText(msg, W/2, 450);
+
+  // Test info
+  ctx.font = '16px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#667799';
+  ctx.fillText('iq-test.com.cn  ·  趣味IQ自测', W/2, 540);
+
+  // Bottom CTA
+  ctx.fillStyle = '#667eea';
+  ctx.fillRect(W/2 - 120, H - 100, 240, 44);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 18px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(t('share.saveHint'), W/2, H - 72);
+
+  // Convert to downloadable image
+  const link = document.createElement('a');
+  link.download = 'iq-result-' + iq + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+
+  showToast('✅ ' + t('share.saveHint'));
 }

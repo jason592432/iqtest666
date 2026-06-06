@@ -98,6 +98,12 @@ TRANSLATIONS['zh-CN'] = {
   'home.btn': '返回首页',
   'bookmark.text': '收藏本站',
   'bookmark.tip': '按 Ctrl+D 将本站加入浏览器收藏夹',
+  'share.title': '分享你的测评结果',
+  'share.poster': '生成海报',
+  'share.copy': '复制链接',
+  'share.copied': '链接已复制！',
+  'share.posterTitle': '我的IQ测评结果',
+  'share.saveHint': '长按或截图保存海报，分享到朋友圈',
 };
 
 // ---- English ----
@@ -181,6 +187,12 @@ TRANSLATIONS['en'] = {
   'home.btn': 'Home',
   'bookmark.text': 'Bookmark',
   'bookmark.tip': 'Press Ctrl+D to bookmark this page',
+  'share.title': 'Share Your Result',
+  'share.poster': 'Generate Poster',
+  'share.copy': 'Copy Link',
+  'share.copied': 'Link Copied!',
+  'share.posterTitle': 'My IQ Result',
+  'share.saveHint': 'Screenshot to save and share',
 };
 
 // ---- Español ----
