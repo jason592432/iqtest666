@@ -500,11 +500,15 @@ function showResult() {
   // Profile & recommendation
   const profileFn = currentLangCode === 'zh-CN' ? (currentTest.getProfile || defaultGetProfile) : (currentTest.getProfileEn || currentTest.getProfile || defaultGetProfile);
   const recFn = currentLangCode === 'zh-CN' ? (currentTest.getRecommendation || defaultGetRecommendation) : (currentTest.getRecommendationEn || currentTest.getRecommendation || defaultGetRecommendation);
-  if (els.profileText) els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' + profileFn(result, currentTest);
+  if (els.profileText) {
+    const profileContent = profileFn(result, currentTest);
+    els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' + (profileContent || t('profile.general'));
+  }
   if (els.recommendText) {
     const recLabel = currentLangCode === 'zh-CN' ? '发展建议：' :
                      currentLangCode === 'en' ? 'Recommendation: ' : 'Recommendation: ';
-    els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' + recFn(result, currentTest);
+    const recContent = recFn(result, currentTest);
+    els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' + (recContent || t('rec.normal'));
   }
 }
 
