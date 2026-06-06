@@ -20,7 +20,7 @@ const TRANSLATIONS = {};
 // ---- Chinese (Simplified) ----
 TRANSLATIONS['zh-CN'] = {
   'selector.title': '免费IQ智力测试',
-  'selector.subtitle': '全球最权威三大智力量表',
+  'selector.subtitle': '基于经典推理题型 · 30分钟趣味自测 · 仅供参考',
   'wais.name': '韦氏成人智力测验',
   'wais.desc': '参考WAIS-IV架构，评估言语理解、知觉推理、工作记忆与加工速度',
   'wais.meta': '30 题 · 25 分钟 · 16岁+',
@@ -103,7 +103,7 @@ TRANSLATIONS['zh-CN'] = {
 // ---- English ----
 TRANSLATIONS['en'] = {
   'selector.title': 'Free IQ Test',
-  'selector.subtitle': 'Four Standardized Intelligence Assessments',
+  'selector.subtitle': 'Fun IQ Self-Test · 30 Min · For Reference Only',
   'wais.name': 'WAIS Adult Intelligence',
   'wais.desc': 'Based on WAIS-IV, assessing verbal comprehension, perceptual reasoning, working memory & processing speed',
   'wais.meta': '30 items · 25 min · 16+',
@@ -186,7 +186,7 @@ TRANSLATIONS['en'] = {
 // ---- Español ----
 TRANSLATIONS['es'] = {
   'selector.title': 'Test de IQ Gratuito',
-  'selector.subtitle': 'Cuatro Evaluaciones de Inteligencia Estandarizadas',
+  'selector.subtitle': 'Test de IQ Divertido · 30 Min · Solo Referencia',
   'wais.name': 'WAIS Inteligencia Adultos',
   'wais.desc': 'Basado en WAIS-IV: comprensión verbal, razonamiento perceptual, memoria de trabajo y velocidad de procesamiento',
   'wais.meta': '30 preg. · 25 min · 16+',
@@ -267,7 +267,7 @@ TRANSLATIONS['es'] = {
 // ---- Français ----
 TRANSLATIONS['fr'] = {
   'selector.title': 'Test de QI Gratuit',
-  'selector.subtitle': 'Quatre Évaluations d\'Intelligence Standardisées',
+  'selector.subtitle': 'Test de QI Ludique · 30 Min · À Titre Indicatif',
   'wais.name': 'WAIS Intelligence Adulte',
   'wais.desc': 'Basé sur WAIS-IV : compréhension verbale, raisonnement perceptif, mémoire de travail et vitesse de traitement',
   'wais.meta': '30 items · 25 min · 16+',
@@ -348,7 +348,7 @@ TRANSLATIONS['fr'] = {
 // ---- Deutsch ----
 TRANSLATIONS['de'] = {
   'selector.title': 'Kostenloser IQ-Test',
-  'selector.subtitle': 'Vier standardisierte Intelligenztests',
+  'selector.subtitle': 'Spielerischer IQ-Test · 30 Min · Nur Referenz',
   'wais.name': 'WAIS-Intelligenztest Erwachsene',
   'wais.desc': 'Basierend auf WAIS-IV: Sprachverständnis, Wahrnehmungsorganisation, Arbeitsgedächtnis und Verarbeitungsgeschwindigkeit',
   'wais.meta': '30 Fragen · 25 Min · 16+',
@@ -429,7 +429,7 @@ TRANSLATIONS['de'] = {
 // ---- Português ----
 TRANSLATIONS['pt'] = {
   'selector.title': 'Teste de QI Gratuito',
-  'selector.subtitle': 'Quatro Avaliações de Inteligência Padronizadas',
+  'selector.subtitle': 'Teste de IQ Divertido · 30 Min · Apenas Referência',
   'wais.name': 'WAIS Inteligência Adultos',
   'wais.desc': 'Baseado no WAIS-IV: compreensão verbal, raciocínio perceptual, memória de trabalho e velocidade de processamento',
   'wais.meta': '30 itens · 25 min · 16+',
@@ -503,7 +503,7 @@ TRANSLATIONS['pt'] = {
 // ---- Русский ----
 TRANSLATIONS['ru'] = {
   'selector.title': 'Бесплатный тест IQ',
-  'selector.subtitle': 'Четыре стандартизированных теста интеллекта',
+  'selector.subtitle': 'Занимательный тест IQ · 30 мин · Только для справки',
   'wais.name': 'WAIS для взрослых',
   'wais.desc': 'Основан на WAIS-IV: вербальное понимание, перцептивное мышление, рабочая память, скорость обработки',
   'wais.meta': '30 вопросов · 25 мин · 16+',
@@ -573,7 +573,7 @@ TRANSLATIONS['ru'] = {
 // ---- 日本語 ----
 TRANSLATIONS['ja'] = {
   'selector.title': '無料IQテスト',
-  'selector.subtitle': '4つの標準知能検査',
+  'selector.subtitle': '楽しいIQテスト · 30分 · 参考程度に',
   'wais.name': 'WAIS 成人知能検査',
   'wais.desc': 'WAIS-IV準拠：言語理解、知覚推理、ワーキングメモリー、処理速度を評価',
   'wais.meta': '30問 · 25分 · 16歳+',
@@ -643,7 +643,7 @@ TRANSLATIONS['ja'] = {
 // ---- 한국어 ----
 TRANSLATIONS['ko'] = {
   'selector.title': '무료 IQ 테스트',
-  'selector.subtitle': '4가지 표준화 지능 검사',
+  'selector.subtitle': '재미있는 IQ 테스트 · 30분 · 참고용',
   'wais.name': 'WAIS 성인 지능 검사',
   'wais.desc': 'WAIS-IV 기반: 언어 이해, 지각 추론, 작업 기억, 처리 속도 평가',
   'wais.meta': '30문항 · 25분 · 16세+',
@@ -713,7 +713,7 @@ TRANSLATIONS['ko'] = {
 // ---- العربية ----
 TRANSLATIONS['ar'] = {
   'selector.title': 'اختبار الذكاء المجاني',
-  'selector.subtitle': 'أربعة تقييمات ذكاء معيارية',
+  'selector.subtitle': 'اختبار ذكاء ترفيهي · 30 دقيقة · للإشارة فقط',
   'wais.name': 'وايس للذكاء للبالغين',
   'wais.desc': 'بناءً على WAIS-IV: الفهم اللفظي، الاستدلال الإدراكي، الذاكرة العاملة، سرعة المعالجة',
   'wais.meta': '30 سؤال · 25 دقيقة · 16+',
