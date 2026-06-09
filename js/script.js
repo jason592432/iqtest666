@@ -888,34 +888,35 @@ function closeSharePopup() {
 }
 function shareTo(platform) {
   closeSharePopup();
-  const url = encodeURIComponent('https://iq-test.com.cn');
-  const title = encodeURIComponent(document.title || '免费IQ智力测验');
+  const url = 'https://iq-test.com.cn';
+  const title = document.title || '免费IQ智力测验';
+  const shareText = '来看看我的IQ测试结果！\n' + url;
   switch(platform) {
-    case 'wechat':
-      // WeChat: copy text + URL to clipboard, user pastes in WeChat
-      const wechatText = '来看看我的IQ测试结果！\n' + decodeURIComponent(url);
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(wechatText).then(() => {
-          showToast('\u2705 \u5df2\u590d\u5236\uff0c\u6253\u5f00\u5fae\u4fe1\u7c98\u7d34\u5206\u4eab');
-        }).catch(() => { fallbackCopy(wechatText); });
-      } else { fallbackCopy(wechatText); }
+    case 'wechat': {
+      copyText(shareText);
+      showToast('✅ 已复制，打开微信粘贴分享');
       break;
-    case 'weibo':
-      window.open('https://service.weibo.com/share/share.php?url=' + url + '&title=' + title, '_blank', 'width=600,height=500');
+    }
+    case 'weibo': {
+      const weiboUrl = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
+      window.open(weiboUrl, '_blank', 'width=600,height=500');
       break;
-    case 'xhs':
-      // Xiaohongshu: copy text + URL
-      const xhsText = '\u2705 \u6211\u6d4b\u4e86IQ\uff0c\u4f60\u4e5f\u6765\u8bd5\u8bd5\uff01\n' + decodeURIComponent(url);
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(xhsText).then(() => {
-          showToast('\u2705 \u5df2\u590d\u5236\uff0c\u6253\u5f00\u5c0f\u7ea2\u4e66\u7c98\u7a97\u53d1\u5e03');
-        }).catch(() => { fallbackCopy(xhsText); });
-      } else { fallbackCopy(xhsText); }
+    }
+    case 'xhs': {
+      copyText(shareText);
+      showToast('✅ 已复制，打开小红书粘贴发布');
       break;
-    case 'copy':
+    }
+    case 'copy': {
       copyResultLink();
       break;
+    }
   }
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(function() { fallbackCopy(text); });
+  } else { fallbackCopy(text); }
 }
 // Close popup on bg click
 document.addEventListener('click', function(e) {
