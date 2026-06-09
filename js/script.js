@@ -500,15 +500,58 @@ function showResult() {
   // Profile & recommendation
   const profileFn = currentLangCode === 'zh-CN' ? (currentTest.getProfile || defaultGetProfile) : (currentTest.getProfileEn || currentTest.getProfile || defaultGetProfile);
   const recFn = currentLangCode === 'zh-CN' ? (currentTest.getRecommendation || defaultGetRecommendation) : (currentTest.getRecommendationEn || currentTest.getRecommendation || defaultGetRecommendation);
+
+  // Try test-specific profile first, fallback to rich conclusion generator
+  var profileText = '';
+  try {
+    profileText = profileFn(result, currentTest);
+  } catch(e) {}
+  if (!profileText) profileText = getRichConclusion(result.fsiq);
+
   if (els.profileText) {
-    const profileContent = profileFn(result, currentTest);
-    els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' + (profileContent || t('profile.general'));
+    els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' + profileText;
   }
   if (els.recommendText) {
     const recLabel = currentLangCode === 'zh-CN' ? '发展建议：' :
                      currentLangCode === 'en' ? 'Recommendation: ' : 'Recommendation: ';
-    const recContent = recFn(result, currentTest);
-    els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' + (recContent || t('rec.normal'));
+    var recText = '';
+    try {
+      recText = recFn(result, currentTest);
+    } catch(e) {}
+    if (!recText) recText = getRichRecommendation(result.fsiq);
+    els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' + recText;
+  }
+}
+
+function getRichConclusion(iq) {
+  if (iq >= 130) {
+    return '哇！你的大脑是超频模式🚀 抽象推理能力满分，人群中不到2%的人能达到这个水平。\n\n别人还在想第一步的时候，你已经算好了三步。建议不要随便跟人炫耀，容易没朋友😎';
+  } else if (iq >= 120) {
+    return '优秀的表现！你的逻辑思维在线，能快速吃透复杂的问题，在人群中也属于前10%的选手💪\n\n不管是工作中的难题还是生活中的烧脑游戏，你都能轻松拿捏。继续保持这种状态，未来可期！';
+  } else if (iq >= 110) {
+    return '不错的成绩！你的推理能力高于平均水平，逻辑分析能力相当在线👍\n\n遇到复杂问题你不会慌，能冷静地拆解、分析、找到解决方案。稍微多练练，冲进前10%不是梦！';
+  } else if (iq >= 100) {
+    return '中等偏上的水平，脑子转得挺快的🧠\n\n日常生活中你基本不会遇到搞不定的逻辑问题，偶尔被绕晕也是正常的——谁还没个迷糊的时候呢？多玩玩数独、推理题，脑力还能再升级！';
+  } else if (iq >= 90) {
+    return '处于正常范围，大脑运行平稳，状态不错😊\n\n你处理日常的逻辑问题完全没问题，可能只是不太擅长某些类型的题目。每个人的思维方式不同，找对适合自己的方法最重要！';
+  } else if (iq >= 80) {
+    return '分数略低于平均水平，但别太在意——IQ分数受很多因素影响，状态、疲劳度都会影响发挥😅\n\n建议休息好了再测一次，或者多练练图形推理题，这种能力是可以通过练习提升的！';
+  } else {
+    return '今天可能不在状态？😅 或者你只是不太适应图形推理这种题型。\n\n先好好休息一下，下次精神饱满的时候再来挑战。记住：IQ测试测的只是某几种能力，不代表你的全部！';
+  }
+}
+
+function getRichRecommendation(iq) {
+  if (iq >= 130) {
+    return '推荐挑战：高级数独、编程算法、国际象棋、密室逃脱。你的大脑需要更刺激的挑战！';
+  } else if (iq >= 120) {
+    return '推荐训练：逻辑谜题、策略类游戏（围棋/象棋）、学习一门新语言或乐器，让你的大脑保持活跃。';
+  } else if (iq >= 110) {
+    return '推荐练习：多做图形推理题、数独、扫雷游戏，这些都能帮你的逻辑思维再上一层楼。';
+  } else if (iq >= 90) {
+    return '推荐多玩一些烧脑小游戏，如数独、逻辑谜题、推理类桌游。每周坚持2-3次，你会发现自己的进步！';
+  } else {
+    return '从简单的图形匹配和模式观察开始，慢慢挑战更复杂的题目。网上有很多免费的逻辑训练资源，每天10分钟就有帮助！';
   }
 }
 
