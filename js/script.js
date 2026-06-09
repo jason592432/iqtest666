@@ -931,22 +931,16 @@ function closeSharePopup() {
 }
 function shareTo(platform) {
   closeSharePopup();
-  // Generate share poster then share
-  var dataUrl = generateSitePoster();
   var siteUrl = 'https://iq-test.com.cn';
   var shareText = '免费IQ智力测验 - 在线趣味智商评估\n' + siteUrl;
   
   if (platform === 'wechat') {
-    // Download poster + copy text
-    downloadPoster(dataUrl);
-    copyShareText(shareText, '✅ 海报已保存，文案已复制，打开微信发送');
+    copyShareText(shareText, '✅ 已复制，打开微信粘贴分享');
   } else if (platform === 'weibo') {
-    downloadPoster(dataUrl);
     var wurl = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(siteUrl) + '&title=' + encodeURIComponent('免费IQ智力测验');
     window.open(wurl, '_blank', 'width=600,height=500');
   } else if (platform === 'xhs') {
-    downloadPoster(dataUrl);
-    copyShareText(shareText, '✅ 海报已保存，文案已复制，打开小红书发布');
+    copyShareText(shareText, '✅ 已复制，打开小红书粘贴发布');
   }
 }
 function downloadPoster(dataUrl) {
