@@ -876,3 +876,51 @@ function drawIQPoster() {
     showToast('\u26A0\uFE0F \u751F\u6210\u5931\u8D25\uFF0C\u8BF7\u622A\u5C4F\u4FDD\u5B58');
   }
 }
+
+// ---- Share popup ----
+function shareFooter() {
+  const popup = $('sharePopup');
+  if (popup) popup.style.display = 'flex';
+}
+function closeSharePopup() {
+  const popup = $('sharePopup');
+  if (popup) popup.style.display = 'none';
+}
+function shareTo(platform) {
+  closeSharePopup();
+  const url = encodeURIComponent('https://iq-test.com.cn');
+  const title = encodeURIComponent(document.title || '免费IQ智力测验');
+  switch(platform) {
+    case 'wechat':
+      // WeChat: copy text + URL to clipboard, user pastes in WeChat
+      const wechatText = '来看看我的IQ测试结果！\n' + decodeURIComponent(url);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(wechatText).then(() => {
+          showToast('\u2705 \u5df2\u590d\u5236\uff0c\u6253\u5f00\u5fae\u4fe1\u7c98\u7d34\u5206\u4eab');
+        }).catch(() => { fallbackCopy(wechatText); });
+      } else { fallbackCopy(wechatText); }
+      break;
+    case 'weibo':
+      window.open('https://service.weibo.com/share/share.php?url=' + url + '&title=' + title, '_blank', 'width=600,height=500');
+      break;
+    case 'xhs':
+      // Xiaohongshu: copy text + URL
+      const xhsText = '\u2705 \u6211\u6d4b\u4e86IQ\uff0c\u4f60\u4e5f\u6765\u8bd5\u8bd5\uff01\n' + decodeURIComponent(url);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(xhsText).then(() => {
+          showToast('\u2705 \u5df2\u590d\u5236\uff0c\u6253\u5f00\u5c0f\u7ea2\u4e66\u7c98\u7a97\u53d1\u5e03');
+        }).catch(() => { fallbackCopy(xhsText); });
+      } else { fallbackCopy(xhsText); }
+      break;
+    case 'copy':
+      copyResultLink();
+      break;
+  }
+}
+// Close popup on bg click
+document.addEventListener('click', function(e) {
+  const popup = $('sharePopup');
+  if (popup && popup.style.display === 'flex' && e.target === popup) {
+    closeSharePopup();
+  }
+});

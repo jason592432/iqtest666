@@ -19,7 +19,7 @@ const TRANSLATIONS = {};
 
 // ---- Chinese (Simplified) ----
 TRANSLATIONS['zh-CN'] = {
-  'selector.title': '免费IQ智力测试',
+  'selector.title': '免费IQ智力测验',
   'selector.subtitle': '基于经典推理题型 · 30分钟趣味自测 · 仅供参考',
   'wais.name': '韦氏成人智力测验',
   'wais.desc': '参考WAIS-IV架构，评估言语理解、知觉推理、工作记忆与加工速度',
@@ -104,6 +104,8 @@ TRANSLATIONS['zh-CN'] = {
   'share.copied': '链接已复制！',
   'share.posterTitle': '我的IQ测评结果',
   'share.saveHint': '长按或截图保存海报，分享到朋友圈',
+  'share.footer': '分享网站',
+  'share.choose': '分享到',
 };
 
 // ---- English ----
@@ -193,6 +195,8 @@ TRANSLATIONS['en'] = {
   'share.copied': 'Link Copied!',
   'share.posterTitle': 'My IQ Result',
   'share.saveHint': 'Screenshot to save and share',
+  'share.footer': 'Share Site',
+  'share.choose': 'Share to',
 };
 
 // ---- Español ----
