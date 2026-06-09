@@ -879,48 +879,51 @@ function drawIQPoster() {
 
 // ---- Share popup ----
 function shareFooter() {
-  const popup = $('sharePopup');
+  var popup = document.getElementById('sharePopup');
   if (popup) popup.style.display = 'flex';
 }
 function closeSharePopup() {
-  const popup = $('sharePopup');
+  var popup = document.getElementById('sharePopup');
   if (popup) popup.style.display = 'none';
 }
 function shareTo(platform) {
   closeSharePopup();
-  const url = 'https://iq-test.com.cn';
-  const title = document.title || '免费IQ智力测验';
-  const shareText = '来看看我的IQ测试结果！\n' + url;
-  switch(platform) {
-    case 'wechat': {
-      copyText(shareText);
-      showToast('✅ 已复制，打开微信粘贴分享');
-      break;
-    }
-    case 'weibo': {
-      const weiboUrl = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
-      window.open(weiboUrl, '_blank', 'width=600,height=500');
-      break;
-    }
-    case 'xhs': {
-      copyText(shareText);
-      showToast('✅ 已复制，打开小红书粘贴发布');
-      break;
-    }
-    case 'copy': {
-      copyResultLink();
-      break;
-    }
+  if (platform === 'wechat') {
+    var txt = '来看看我的IQ测试结果！\nhttps://iq-test.com.cn';
+    copyShareText(txt, '✅ 已复制，打开微信粘贴分享');
+  } else if (platform === 'weibo') {
+    var wurl = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent('https://iq-test.com.cn') + '&title=' + encodeURIComponent(document.title || '免费IQ智力测验');
+    window.open(wurl, '_blank', 'width=600,height=500');
+  } else if (platform === 'xhs') {
+    var txt2 = '来看看我的IQ测试结果！\nhttps://iq-test.com.cn';
+    copyShareText(txt2, '✅ 已复制，打开小红书粘贴发布');
+  } else if (platform === 'copy') {
+    copySiteLink();
   }
 }
-function copyText(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).catch(function() { fallbackCopy(text); });
-  } else { fallbackCopy(text); }
+function copyShareText(text, msg) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.top = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast(msg); }
+  catch(e) { showToast('⚠️ 复制失败，请手动复制'); }
+  document.body.removeChild(ta);
+}
+function copySiteLink() {
+  var ta = document.createElement('textarea');
+  ta.value = 'https://iq-test.com.cn';
+  ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.top = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast('✅ 链接已复制！'); }
+  catch(e) { showToast('⚠️ 复制失败'); }
+  document.body.removeChild(ta);
 }
 // Close popup on bg click
 document.addEventListener('click', function(e) {
-  const popup = $('sharePopup');
+  var popup = document.getElementById('sharePopup');
   if (popup && popup.style.display === 'flex' && e.target === popup) {
     closeSharePopup();
   }
