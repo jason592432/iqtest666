@@ -888,18 +888,117 @@ function closeSharePopup() {
 }
 function shareTo(platform) {
   closeSharePopup();
+  // Generate share poster then share
+  var dataUrl = generateSitePoster();
+  var siteUrl = 'https://iq-test.com.cn';
+  var shareText = '免费IQ智力测验 - 在线趣味智商评估\n' + siteUrl;
+  
   if (platform === 'wechat') {
-    var txt = '来看看我的IQ测试结果！\nhttps://iq-test.com.cn';
-    copyShareText(txt, '✅ 已复制，打开微信粘贴分享');
+    // Download poster + copy text
+    downloadPoster(dataUrl);
+    copyShareText(shareText, '✅ 海报已保存，文案已复制，打开微信发送');
   } else if (platform === 'weibo') {
-    var wurl = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent('https://iq-test.com.cn') + '&title=' + encodeURIComponent(document.title || '免费IQ智力测验');
+    downloadPoster(dataUrl);
+    var wurl = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(siteUrl) + '&title=' + encodeURIComponent('免费IQ智力测验');
     window.open(wurl, '_blank', 'width=600,height=500');
   } else if (platform === 'xhs') {
-    var txt2 = '来看看我的IQ测试结果！\nhttps://iq-test.com.cn';
-    copyShareText(txt2, '✅ 已复制，打开小红书粘贴发布');
-  } else if (platform === 'copy') {
-    copySiteLink();
+    downloadPoster(dataUrl);
+    copyShareText(shareText, '✅ 海报已保存，文案已复制，打开小红书发布');
   }
+}
+function downloadPoster(dataUrl) {
+  var link = document.createElement('a');
+  link.download = 'iq-test-share.png';
+  link.href = dataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+function generateSitePoster() {
+  // Use a temporary canvas
+  var c = document.getElementById('posterCanvas');
+  if (!c) return '';
+  c.style.display = 'block';
+  c.style.position = 'fixed'; c.style.top = '-9999px'; c.style.left = '-9999px';
+  c.width = 600; c.height = 800;
+  var ctx = c.getContext('2d');
+  if (!ctx) { c.style.display = 'none'; return ''; }
+  
+  // Background gradient (site theme)
+  var g = ctx.createLinearGradient(0, 0, 600, 800);
+  g.addColorStop(0, '#1a1a2e'); g.addColorStop(0.5, '#16213e'); g.addColorStop(1, '#0f3460');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 600, 800);
+  
+  // Decorative circles
+  ctx.fillStyle = 'rgba(102,126,234,0.1)';
+  ctx.beginPath(); ctx.arc(500, 100, 200, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(118,75,162,0.08)';
+  ctx.beginPath(); ctx.arc(100, 680, 160, 0, Math.PI*2); ctx.fill();
+  
+  // Top bar
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(0, 0, 600, 56);
+  ctx.fillStyle = '#8899bb';
+  ctx.font = '15px -apple-system, "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('免费IQ智力测验', 300, 36);
+  
+  // Brain icon
+  ctx.font = '72px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('\uD83E\uDDE0', 300, 170);
+  
+  // Title
+  ctx.font = 'bold 32px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('免费IQ智力测验', 300, 250);
+  
+  // Subtitle
+  ctx.font = '18px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#99aacc';
+  ctx.fillText('基于经典推理题型 · 趣味IQ自测', 300, 295);
+  
+  // Divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(80, 330); ctx.lineTo(520, 330); ctx.stroke();
+  
+  // Feature list
+  ctx.font = '17px -apple-system, "PingFang SC", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#aabbdd';
+  var features = ['\u2705 72道图形推理题', '\u2705 40分钟完成', '\u2705 即时出结果', '\u2705 多语言支持'];
+  features.forEach(function(f, i) {
+    ctx.fillText(f, 120, 390 + i * 40);
+  });
+  
+  // CTA
+  var btnX = 300, btnY = 600, btnW = 240, btnH = 48;
+  ctx.fillStyle = '#667eea';
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(btnX-btnW/2, btnY-btnH/2, btnW, btnH, 24) : ctx.rect(btnX-btnW/2, btnY-btnH/2, btnW, btnH);
+  ctx.fill();
+  
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 18px -apple-system, "PingFang SC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('开始测试 \u2192', btnX, btnY + 6);
+  
+  // URL
+  ctx.font = '16px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#667799';
+  ctx.textAlign = 'center';
+  ctx.fillText('iq-test.com.cn', 300, 700);
+  
+  // Disclamer
+  ctx.font = '11px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#556677';
+  ctx.fillText('娱乐性质 · 仅供参考 · 非临床诊断', 300, 750);
+  
+  var dataUrl = c.toDataURL('image/png');
+  c.style.display = 'none';
+  return dataUrl;
 }
 function copyShareText(text, msg) {
   var ta = document.createElement('textarea');
