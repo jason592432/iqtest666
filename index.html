@@ -233,7 +233,7 @@ var _hmt = _hmt || [];
             <button class="share-btn share-btn-wechat" onclick="shareTo('wechat')">💚 <span>微信</span></button>
             <button class="share-btn share-btn-weibo" onclick="shareTo('weibo')">🔴 <span>微博</span></button>
             <button class="share-btn share-btn-poster" id="posterBtn">🖼️ <span data-i18n="share.poster">生成海报</span></button>
-            <button class="share-btn share-btn-copy" id="copyLinkBtn">🔗 <span data-i18n="share.copy">复制链接</span></button>
+            <button class="share-btn share-btn-copy" onclick="copySiteLink()">🔗 <span data-i18n="share.copy">复制链接</span></button>
           </div>
         </div>
 
@@ -287,7 +287,7 @@ var _hmt = _hmt || [];
           <span class="share-popup-icon" style="background:#ff2442;">📕</span>
           <span>小红书</span>
         </a>
-        <a class="share-popup-item" onclick="shareTo('copy')" id="shareCopyLink">
+        <a class="share-popup-item" onclick="copySiteLink(); closeSharePopup();" id="shareCopyLink">
           <span class="share-popup-icon" style="background:#667eea;">🔗</span>
           <span data-i18n="share.copy">复制链接</span>
         </a>
