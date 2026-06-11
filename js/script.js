@@ -1064,3 +1064,45 @@ document.addEventListener('click', function(e) {
     closeSharePopup();
   }
 });
+
+// ---- Message board ----
+function toggleMsgBoard() {
+  var board = document.getElementById('msgBoard');
+  if (!board) return;
+  if (board.style.display === 'flex') {
+    board.style.display = 'none';
+  } else {
+    board.style.display = 'flex';
+    renderMsgs();
+    document.getElementById('msgInput').focus();
+  }
+}
+function sendMsg() {
+  var input = document.getElementById('msgInput');
+  var text = input.value.trim();
+  if (!text) return;
+  var msgs = JSON.parse(localStorage.getItem('iq_msgs') || '[]');
+  msgs.push({ text: text, time: new Date().toLocaleString() });
+  localStorage.setItem('iq_msgs', JSON.stringify(msgs));
+  input.value = '';
+  renderMsgs();
+  showToast('✅ 留言已发送');
+}
+function renderMsgs() {
+  var list = document.getElementById('msgList');
+  var empty = document.getElementById('msgEmpty');
+  if (!list) return;
+  var msgs = JSON.parse(localStorage.getItem('iq_msgs') || '[]');
+  if (msgs.length === 0) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = msgs.slice().reverse().map(function(m) {
+    return '<div class="msg-item">' + escHtml(m.text) + '<div class="msg-time">' + (m.time || '') + '</div></div>';
+  }).join('');
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}

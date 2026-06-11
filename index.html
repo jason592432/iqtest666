@@ -304,6 +304,22 @@ var _hmt = _hmt || [];
   </div>
   <p class="disclaimer-bar">本站测试为趣味性评估，仅供娱乐参考，不构成心理或医学诊断。</p>
 
+  <!-- 留言板 -->
+  <div class="msg-btn" id="msgBtn" onclick="toggleMsgBoard()">💬</div>
+
+  <div class="msg-board" id="msgBoard">
+    <div class="msg-header">
+      <span>📝 留言板</span>
+      <button class="msg-close" onclick="toggleMsgBoard()">✕</button>
+    </div>
+    <div class="msg-list" id="msgList"></div>
+    <div class="msg-form">
+      <input class="msg-input" id="msgInput" placeholder="写下你想说的..." maxlength="200">
+      <button class="msg-send" onclick="sendMsg()">发送</button>
+    </div>
+    <div class="msg-empty" id="msgEmpty">还没有留言，来写第一条吧 ✍️</div>
+  </div>
+
   <svg style="width:0;height:0;">
     <defs>
       <linearGradient id="iqGradient" x1="0%" y1="0%" x2="100%" y2="100%">
