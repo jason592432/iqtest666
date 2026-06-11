@@ -1066,6 +1066,8 @@ document.addEventListener('click', function(e) {
 });
 
 // ---- Message board ----
+var MSG_API = '/api/messages';
+
 function toggleMsgBoard() {
   var board = document.getElementById('msgBoard');
   if (!board) return;
@@ -1074,26 +1076,57 @@ function toggleMsgBoard() {
   } else {
     board.style.display = 'flex';
     renderMsgs();
-    document.getElementById('msgInput').focus();
+    var inp = document.getElementById('msgInput');
+    if (inp) inp.focus();
   }
 }
 function sendMsg() {
   var input = document.getElementById('msgInput');
   var text = input.value.trim();
   if (!text) return;
-  var msgs = JSON.parse(localStorage.getItem('iq_msgs') || '[]');
-  msgs.push({ text: text, time: new Date().toLocaleString() });
-  localStorage.setItem('iq_msgs', JSON.stringify(msgs));
-  input.value = '';
-  renderMsgs();
-  showToast('✅ 留言已发送');
+  input.disabled = true;
+  fetch(MSG_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text })
+  }).then(function(r) {
+    if (!r.ok) throw new Error('发送失败');
+    input.value = '';
+    renderMsgs();
+    showToast('✅ 留言已发送');
+  }).catch(function(e) {
+    showToast('⚠️ ' + e.message + '，留言已保存到本地');
+    // Fallback: save locally
+    var msgs = JSON.parse(localStorage.getItem('iq_msgs') || '[]');
+    msgs.push({ text: text, time: new Date().toLocaleString('zh-CN') });
+    localStorage.setItem('iq_msgs', JSON.stringify(msgs));
+    input.value = '';
+    renderMsgs();
+  }).finally(function() {
+    input.disabled = false;
+    input.focus();
+  });
 }
 function renderMsgs() {
   var list = document.getElementById('msgList');
   var empty = document.getElementById('msgEmpty');
   if (!list) return;
-  var msgs = JSON.parse(localStorage.getItem('iq_msgs') || '[]');
-  if (msgs.length === 0) {
+
+  // Try server first, fallback to local
+  fetch(MSG_API)
+    .then(function(r) { return r.json(); })
+    .then(function(msgs) {
+      renderMsgList(msgs, list, empty);
+    })
+    .catch(function() {
+      // Offline fallback
+      var msgs = JSON.parse(localStorage.getItem('iq_msgs') || '[]');
+      renderMsgList(msgs, list, empty);
+    });
+}
+function renderMsgList(msgs, list, empty) {
+  if (!list) return;
+  if (!msgs || msgs.length === 0) {
     list.innerHTML = '';
     if (empty) empty.style.display = 'block';
     return;
