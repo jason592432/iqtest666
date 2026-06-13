@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQ测试 · 数据看板</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,"PingFang SC",sans-serif; background:#f0f2f5; padding:20px; color:#333; }
+    .header { max-width:1200px; margin:0 auto 20px; display:flex; justify-content:space-between; align-items:center; }
+    .header h1 { font-size:22px; color:#1a1a2e; }
+    .header a { color:#667eea; text-decoration:none; font-size:14px; }
+    .login-box { max-width:360px; margin:100px auto; background:#fff; border-radius:16px; padding:32px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.1); }
+    .login-box h2 { margin-bottom:20px; font-size:18px; }
+    .login-box input { width:100%; padding:10px 14px; border:1px solid #ddd; border-radius:10px; font-size:14px; margin-bottom:12px; }
+    .login-box button { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; padding:10px 32px; border-radius:20px; font-size:14px; cursor:pointer; }
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; max-width:1200px; margin:0 auto 20px; }
+    .stat-card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); text-align:center; }
+    .stat-card .num { font-size:28px; font-weight:bold; color:#667eea; margin-top:4px; }
+    .stat-card .lbl { font-size:12px; color:#889; }
+    .table-wrap { max-width:1200px; margin:0 auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+    table { width:100%; border-collapse:collapse; }
+    th { background:#f8f9ff; padding:12px 14px; font-size:12px; color:#667; text-align:left; border-bottom:2px solid #eef; white-space:nowrap; }
+    td { padding:10px 14px; font-size:13px; border-bottom:1px solid #f0f0f0; }
+    tr:hover td { background:#f8f9ff; }
+    .tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; }
+    .tag-green { background:#e8fae8; color:#388e3c; }
+    .tag-blue { background:#e8f4fd; color:#1976d2; }
+    .tag-orange { background:#fff3e0; color:#e65100; }
+    .tag-gray { background:#f0f0f0; color:#666; }
+    .loading { text-align:center; padding:40px; color:#999; }
+    .error { text-align:center; padding:40px; color:#e53935; }
+    .ip-btn { font-size:11px; color:#667eea; cursor:pointer; text-decoration:underline; }
+    .footer { max-width:1200px; margin:20px auto 0; text-align:center; font-size:12px; color:#aaa; }
+  </style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-box">
+    <h2>🔐 数据看板</h2>
+    <input type="password" id="pwdInput" placeholder="输入管理密码" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">进入</button>
+  </div>
+</div>
+
+<div id="dashboard" style="display:none;">
+  <div class="header">
+    <h1>📊 IQ测试 · 数据看板</h1>
+    <div>
+      <a href="https://iq-test.com.cn" target="_blank">← 返回首页</a>
+      <span style="margin:0 8px;color:#ddd;">|</span>
+      <a href="#" onclick="location.reload();return false;" style="color:#667eea;">🔄 刷新</a>
+    </div>
+  </div>
+
+  <div class="stats" id="statsRow"></div>
+
+  <div class="table-wrap">
+    <div style="padding:14px 16px;border-bottom:1px solid #eef;font-size:13px;color:#667;display:flex;justify-content:space-between;align-items:center;">
+      <span>📋 答题记录</span>
+      <span id="countLabel" style="font-size:12px;"></span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>时间</th><th>测试</th><th>分数</th><th>等级</th><th>IP</th><th>位置</th></tr>
+        </thead>
+        <tbody id="scoresBody">
+          <tr><td colspan="6" class="loading">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">iq-test.com.cn · 数据仅供内部参考</div>
+</div>
+
+<script>
+var TOKEN = '';
+
+function login() {
+  TOKEN = document.getElementById('pwdInput').value.trim() || 'admin123';
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadData();
+}
+
+function loadData() {
+  var body = document.getElementById('scoresBody');
+  var stats = document.getElementById('statsRow');
+  var countLabel = document.getElementById('countLabel');
+
+  fetch('/api/score?token=' + encodeURIComponent(TOKEN))
+    .then(function(r) {
+      if (r.status === 403) throw new Error('密码错误');
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data.success) throw new Error(data.error || '加载失败');
+
+      // Stats
+      var s = data.stats;
+      stats.innerHTML =
+        '<div class="stat-card"><div class="lbl">总答题次数</div><div class="num">' + s.total + '</div></div>' +
+        '<div class="stat-card"><div class="lbl">平均分</div><div class="num">' + s.avgScore + '</div></div>' +
+        '<div class="stat-card"><div class="lbl">最高分</div><div class="num">' + s.maxScore + '</div></div>' +
+        '<div class="stat-card"><div class="lbl">最低分</div><div class="num">' + s.minScore + '</div></div>';
+
+      // By test
+      var testsHtml = '';
+      for (var t in data.byTest) {
+        var info = data.byTest[t];
+        testsHtml += '<div class="stat-card"><div class="lbl">' + t + '</div><div class="num" style="font-size:20px;">' + info.count + '次</div><div style="font-size:11px;color:#999;">均分' + Math.round(info.total/info.count) + '</div></div>';
+      }
+      stats.innerHTML += testsHtml;
+
+      // Table
+      countLabel.textContent = '共 ' + data.scores.length + ' 条';
+      if (data.scores.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" class="loading">暂无数据</td></tr>';
+        return;
+      }
+
+      body.innerHTML = data.scores.map(function(r) {
+        var tagClass = 'tag-gray';
+        var score = r.score || 0;
+        if (score >= 130) tagClass = 'tag-green';
+        else if (score >= 110) tagClass = 'tag-blue';
+        else if (score >= 90) tagClass = 'tag-orange';
+
+        return '<tr>' +
+          '<td>' + (r.time || '') + '</td>' +
+          '<td><span class="tag ' + tagClass + '">' + (r.test || '') + '</span></td>' +
+          '<td style="font-weight:bold;">' + score + '</td>' +
+          '<td>' + (r.label || '') + '</td>' +
+          '<td style="font-size:12px;color:#888;font-family:monospace;">' + (r.ip || '') + '</td>' +
+          '<td style="font-size:12px;color:#888;">' + (r.location || '') + '</td>' +
+        '</tr>';
+      }).join('');
+    })
+    .catch(function(e) {
+      body.innerHTML = '<tr><td colspan="6" class="error">' + e.message + '</td></tr>';
+    });
+}
+
+// Auto-refresh every 30 seconds
+setInterval(loadData, 30000);
+
+// Check URL for token
+var hash = window.location.hash;
+if (hash && hash.length > 1) {
+  document.getElementById('pwdInput').value = hash.substring(1);
+  login();
+}
+</script>
+</body>
+</html>

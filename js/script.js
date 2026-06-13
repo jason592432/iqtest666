@@ -521,6 +521,29 @@ function showResult() {
     if (!recText) recText = getRichRecommendation(result.fsiq);
     els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' + recText;
   }
+
+  // 记录分数到服务器
+  recordScore(result, currentTest);
+}
+
+function recordScore(result, test) {
+  try {
+    var data = {
+      test: test ? test.id : 'unknown',
+      score: result ? result.fsiq || 0 : 0,
+      label: document.getElementById('iqLabel') ? document.getElementById('iqLabel').textContent : ''
+    };
+    // 使用 sendBeacon 或 fetch 异步发送，不影响用户体验
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon('/api/score', JSON.stringify(data));
+    } else {
+      fetch('/api/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).catch(function() {}); // 静默失败
+    }
+  } catch(e) {}
 }
 
 function getRichConclusion(iq) {
