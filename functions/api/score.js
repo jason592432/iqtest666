@@ -41,12 +41,12 @@ export async function onRequest(context) {
         label: label,
         ip: ip,
         location: location,
-        time: new Date().toLocaleString('zh-CN'),
+        time: getChinaTime(),
         timestamp: Date.now()
       };
 
-      // 存入 KV（按日期分片存储，避免单 key 超限）
-      const dateKey = new Date().toISOString().slice(0, 10); // 2026-06-13
+      // 存入 KV（按中国日期分片存储，避免单 key 超限）
+      const dateKey = getChinaDate();
       const kvKey = 'scores:' + dateKey;
       const existing = await env.MESSAGES_KV.get(kvKey, 'json') || [];
       existing.push(record);
@@ -70,13 +70,16 @@ export async function onRequest(context) {
     }
 
     try {
-      // 获取近 30 天的分数数据
+      // 获取近 30 天的分数数据（使用中国日期）
       const allScores = [];
-      const today = new Date();
+      const todayChina = new Date(Date.now() + 8 * 60 * 60 * 1000); // 北京时间
       for (let i = 0; i < 30; i++) {
-        const d = new Date(today);
+        var d = new Date(todayChina);
         d.setDate(d.getDate() - i);
-        const key = 'scores:' + d.toISOString().slice(0, 10);
+        var y = d.getUTCFullYear();
+        var m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        var dd = String(d.getUTCDate()).padStart(2, '0');
+        const key = 'scores:' + y + '-' + m + '-' + dd;
         const dayScores = await env.MESSAGES_KV.get(key, 'json');
         if (dayScores && Array.isArray(dayScores)) {
           allScores.push(...dayScores);
@@ -114,4 +117,29 @@ export async function onRequest(context) {
   }
 
   return new Response('Method not allowed', { status: 405, headers });
+}
+
+// ---- 中国时间工具函数 ----
+// Cloudflare Workers 运行在 UTC 时区，需要手动转北京时间 (UTC+8)
+
+function getChinaTime() {
+  var now = new Date();
+  // 加上 8 小时得到北京时间
+  var china = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  var y = china.getUTCFullYear();
+  var m = String(china.getUTCMonth() + 1).padStart(2, '0');
+  var d = String(china.getUTCDate()).padStart(2, '0');
+  var h = String(china.getUTCHours()).padStart(2, '0');
+  var min = String(china.getUTCMinutes()).padStart(2, '0');
+  var s = String(china.getUTCSeconds()).padStart(2, '0');
+  return y + '-' + m + '-' + d + ' ' + h + ':' + min + ':' + s;
+}
+
+function getChinaDate() {
+  var now = new Date();
+  var china = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  var y = china.getUTCFullYear();
+  var m = String(china.getUTCMonth() + 1).padStart(2, '0');
+  var d = String(china.getUTCDate()).padStart(2, '0');
+  return y + '-' + m + '-' + d;
 }
