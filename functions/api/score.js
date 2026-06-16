@@ -88,13 +88,6 @@ export async function onRequest(context) {
       // 按时间倒序排列
       allScores.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-      // 统一修正所有记录的时间为北京时间（用 timestamp 字段转换）
-      allScores.forEach(function(r) {
-        if (r.timestamp) {
-          r.time = tsToChina(r.timestamp);
-        }
-      });
-
       // 统计信息
       const stats = {
         total: allScores.length,
@@ -149,16 +142,4 @@ function getChinaDate() {
   var m = String(china.getUTCMonth() + 1).padStart(2, '0');
   var d = String(china.getUTCDate()).padStart(2, '0');
   return y + '-' + m + '-' + d;
-}
-
-/** 将 UTC 毫秒时间戳转为北京时间字符串 */
-function tsToChina(ts) {
-  var china = new Date(ts + 8 * 60 * 60 * 1000);
-  var y = china.getUTCFullYear();
-  var m = String(china.getUTCMonth() + 1).padStart(2, '0');
-  var d = String(china.getUTCDate()).padStart(2, '0');
-  var h = String(china.getUTCHours()).padStart(2, '0');
-  var min = String(china.getUTCMinutes()).padStart(2, '0');
-  var s = String(china.getUTCSeconds()).padStart(2, '0');
-  return y + '/' + m + '/' + d + ' ' + h + ':' + min + ':' + s;
 }

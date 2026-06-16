@@ -130,7 +130,7 @@ function loadData() {
         else if (score >= 90) tagClass = 'tag-orange';
 
         return '<tr>' +
-          '<td>' + (r.time || '') + '</td>' +
+          '<td>' + fmtTime(r.timestamp) + '</td>' +
           '<td><span class="tag ' + tagClass + '">' + (r.test || '') + '</span></td>' +
           '<td style="font-weight:bold;">' + score + '</td>' +
           '<td>' + (r.label || '') + '</td>' +
@@ -146,6 +146,19 @@ function loadData() {
 
 // Auto-refresh every 30 seconds
 setInterval(loadData, 30000);
+
+// 格式化时间为本地时间 (北京时区)
+function fmtTime(ts) {
+  if (!ts) return '-';
+  var d = new Date(ts);
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  var h = String(d.getHours()).padStart(2, '0');
+  var min = String(d.getMinutes()).padStart(2, '0');
+  var s = String(d.getSeconds()).padStart(2, '0');
+  return y + '/' + m + '/' + day + ' ' + h + ':' + min + ':' + s;
+}
 
 // Check URL for token
 var hash = window.location.hash;
