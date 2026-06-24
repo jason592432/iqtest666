@@ -60,33 +60,38 @@ body {
 .lang-selector {
   display: flex;
   justify-content: flex-end;
-  gap: 4px;
+  gap: 2px;
   margin-bottom: 8px;
   background: #f0f2f5;
-  border-radius: 20px;
-  padding: 2px;
+  border-radius: 10px;
+  padding: 3px;
   width: fit-content;
   margin-left: auto;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
 }
 .lang-selector .lang-btn {
   border: none;
   background: transparent;
-  padding: 5px 14px;
-  border-radius: 18px;
+  padding: 6px 14px;
+  border-radius: 8px;
   font-size: 13px;
-  color: #666;
+  font-weight: 500;
+  color: #777;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-family: inherit;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.lang-selector .lang-btn:hover {
+  color: #555;
+  background: rgba(255,255,255,0.5);
 }
 .lang-selector .lang-btn.active {
   background: #fff;
   color: #667eea;
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-}
-.lang-selector .lang-btn:hover:not(.active) {
-  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1), 0 0 0 1px rgba(102,126,234,0.12);
 }
 .lang-selector select {
   display: none;
@@ -473,7 +478,7 @@ body {
 
   /* Language selector buttons */
   .lang-selector { margin-bottom: 6px; }
-  .lang-selector .lang-btn { font-size: 12px; padding: 4px 10px; }
+  .lang-selector .lang-btn { font-size: 12px; padding: 5px 10px; }
 
   /* Selector */
   .selector-header { margin-bottom: 20px; }
@@ -593,7 +598,7 @@ body {
   .result-card h2 { font-size: 15px; }
   .score-ring { width: 80px; height: 80px; }
   .score-value { font-size: 24px; }
-  .lang-selector .lang-btn { font-size: 11px; padding: 3px 8px; }
+  .lang-selector .lang-btn { font-size: 11px; padding: 4px 8px; }
   .conclusion-text { font-size: 12px; }
 }
 

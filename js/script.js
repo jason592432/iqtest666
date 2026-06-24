@@ -653,19 +653,17 @@ function setupReminder(testKey) {
 }
 
 // ---- i18n: language toggle buttons ----
-function switchLang(code) {
-  setLanguage(code);
-  document.querySelectorAll('.lang-btn').forEach(function(b) {
-    b.classList.toggle('active', b.getAttribute('data-lang') === code);
-  });
-}
-
 function initLangToggle() {
   var btns = document.querySelectorAll('.lang-btn');
   if (btns.length === 0) return;
   var current = getCurrentLang();
   btns.forEach(function(b) {
-    b.classList.toggle('active', b.getAttribute('data-lang') === current);
+    var code = b.getAttribute('data-lang');
+    b.classList.toggle('active', code === current);
+    b.onclick = function() {
+      setLanguage(code);
+      btns.forEach(function(x) { x.classList.toggle('active', x.getAttribute('data-lang') === code); });
+    };
   });
 }
 
