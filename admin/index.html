@@ -127,6 +127,7 @@ function loadData() {
       // Stats
       var s = data.stats;
       stats.innerHTML =
+        '<div class="stat-card"><div class="lbl">今日答题</div><div class="num" style="color:#4caf50;">' + (s.today || 0) + '</div></div>' +
         '<div class="stat-card"><div class="lbl">昨日答题</div><div class="num" style="color:#ff9800;">' + (s.yesterday || 0) + '</div></div>' +
         '<div class="stat-card"><div class="lbl">总答题次数</div><div class="num">' + s.total + '</div></div>' +
         '<div class="stat-card"><div class="lbl">平均分</div><div class="num">' + s.avgScore + '</div></div>' +

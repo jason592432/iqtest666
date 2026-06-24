@@ -104,10 +104,16 @@ export async function onRequest(context) {
       var yesterdayData = await env.MESSAGES_KV.get(yesterdayKey, 'json') || [];
       var yesterdayCount = Array.isArray(yesterdayData) ? yesterdayData.length : 0;
 
+      // 获取今日答题次数
+      var todayKey = 'scores:' + getChinaDate();
+      var todayData = await env.MESSAGES_KV.get(todayKey, 'json') || [];
+      var todayCount = Array.isArray(todayData) ? todayData.length : 0;
+
       // 统计信息
       const stats = {
         total: allScores.length,
         yesterday: yesterdayCount,
+        today: todayCount,
         avgScore: allScores.length > 0 ? Math.round(allScores.reduce((s, r) => s + r.score, 0) / allScores.length) : 0,
         maxScore: allScores.length > 0 ? Math.max(...allScores.map(r => r.score)) : 0,
         minScore: allScores.length > 0 ? Math.min(...allScores.map(r => r.score)) : 0,
