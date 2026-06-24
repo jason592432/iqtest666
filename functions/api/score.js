@@ -88,9 +88,20 @@ export async function onRequest(context) {
       // 按时间倒序排列
       allScores.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
+      // 获取昨日答题次数
+      var yesterdayChina = new Date(todayChina);
+      yesterdayChina.setDate(yesterdayChina.getDate() - 1);
+      var yy = yesterdayChina.getUTCFullYear();
+      var ym = String(yesterdayChina.getUTCMonth() + 1).padStart(2, '0');
+      var yd = String(yesterdayChina.getUTCDate()).padStart(2, '0');
+      var yesterdayKey = 'scores:' + yy + '-' + ym + '-' + yd;
+      var yesterdayData = await env.MESSAGES_KV.get(yesterdayKey, 'json') || [];
+      var yesterdayCount = Array.isArray(yesterdayData) ? yesterdayData.length : 0;
+
       // 统计信息
       const stats = {
         total: allScores.length,
+        yesterday: yesterdayCount,
         avgScore: allScores.length > 0 ? Math.round(allScores.reduce((s, r) => s + r.score, 0) / allScores.length) : 0,
         maxScore: allScores.length > 0 ? Math.max(...allScores.map(r => r.score)) : 0,
         minScore: allScores.length > 0 ? Math.min(...allScores.map(r => r.score)) : 0,
