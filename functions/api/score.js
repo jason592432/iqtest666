@@ -72,6 +72,7 @@ export async function onRequest(context) {
     try {
       // 获取近 30 天的分数数据（使用中国日期）
       const allScores = [];
+      const dailyStats = [];
       const todayChina = new Date(Date.now() + 8 * 60 * 60 * 1000); // 北京时间
       for (let i = 0; i < 30; i++) {
         var d = new Date(todayChina);
@@ -79,12 +80,17 @@ export async function onRequest(context) {
         var y = d.getUTCFullYear();
         var m = String(d.getUTCMonth() + 1).padStart(2, '0');
         var dd = String(d.getUTCDate()).padStart(2, '0');
-        const key = 'scores:' + y + '-' + m + '-' + dd;
+        const dateStr = y + '-' + m + '-' + dd;
+        const key = 'scores:' + dateStr;
         const dayScores = await env.MESSAGES_KV.get(key, 'json');
+        var count = (dayScores && Array.isArray(dayScores)) ? dayScores.length : 0;
         if (dayScores && Array.isArray(dayScores)) {
           allScores.push(...dayScores);
         }
+        dailyStats.push({ date: dateStr, count: count });
       }
+      // dailyStats 按日期升序排列（最早在前）
+      dailyStats.reverse();
       // 按时间倒序排列
       allScores.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
@@ -120,6 +126,7 @@ export async function onRequest(context) {
         success: true,
         stats: stats,
         byTest: byTest,
+        dailyStats: dailyStats,
         scores: allScores.slice(0, 200) // 最多返回 200 条
       }), { headers });
     } catch (e) {

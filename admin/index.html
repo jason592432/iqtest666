@@ -31,6 +31,17 @@
     .loading { text-align:center; padding:40px; color:#999; }
     .error { text-align:center; padding:40px; color:#e53935; }
     .ip-btn { font-size:11px; color:#667eea; cursor:pointer; text-decoration:underline; }
+
+    /* 图表区域 */
+    .chart-wrap { max-width:1200px; margin:0 auto 20px; background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06); padding:20px 24px 16px; }
+    .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .chart-header .title { font-size:14px; font-weight:600; color:#333; }
+    .chart-tabs { display:flex; gap:4px; background:#f0f2f5; border-radius:20px; padding:2px; }
+    .chart-tabs button { border:none; background:transparent; padding:6px 16px; border-radius:18px; font-size:13px; color:#666; cursor:pointer; transition:all 0.2s; }
+    .chart-tabs button.active { background:#fff; color:#667eea; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    .chart-tabs button:hover:not(.active) { color:#333; }
+    #dailyChart { width:100%; height:220px; }
+
     .footer { max-width:1200px; margin:20px auto 0; text-align:center; font-size:12px; color:#aaa; }
   </style>
 </head>
@@ -56,6 +67,18 @@
 
   <div class="stats" id="statsRow"></div>
 
+  <!-- 每日答题趋势图 -->
+  <div class="chart-wrap">
+    <div class="chart-header">
+      <span class="title">📈 每日答题趋势</span>
+      <div class="chart-tabs">
+        <button class="tab-btn active" data-range="7" onclick="switchChart(7)">最近一周</button>
+        <button class="tab-btn" data-range="30" onclick="switchChart(30)">最近一个月</button>
+      </div>
+    </div>
+    <canvas id="dailyChart"></canvas>
+  </div>
+
   <div class="table-wrap">
     <div style="padding:14px 16px;border-bottom:1px solid #eef;font-size:13px;color:#667;display:flex;justify-content:space-between;align-items:center;">
       <span>📋 答题记录</span>
@@ -78,6 +101,8 @@
 
 <script>
 var TOKEN = '';
+var CHART_RANGE = 7; // 当前图表显示范围：7天或30天
+var ALL_DAILY_STATS = []; // 全部每日数据
 
 function login() {
   TOKEN = document.getElementById('pwdInput').value.trim() || 'admin123';
@@ -115,6 +140,10 @@ function loadData() {
         testsHtml += '<div class="stat-card"><div class="lbl">' + t + '</div><div class="num" style="font-size:20px;">' + info.count + '次</div><div style="font-size:11px;color:#999;">均分' + Math.round(info.total/info.count) + '</div></div>';
       }
       stats.innerHTML += testsHtml;
+
+      // 保存每日数据并绘制图表
+      ALL_DAILY_STATS = data.dailyStats || [];
+      drawChart(CHART_RANGE);
 
       // Table
       countLabel.textContent = '共 ' + data.scores.length + ' 条';
@@ -160,6 +189,158 @@ function fmtTime(ts) {
   var s = String(d.getSeconds()).padStart(2, '0');
   return y + '/' + m + '/' + day + ' ' + h + ':' + min + ':' + s;
 }
+
+// ---- 每日答题曲线图 ----
+
+function switchChart(days) {
+  CHART_RANGE = days;
+  // 更新按钮样式
+  document.querySelectorAll('.tab-btn').forEach(function(b) {
+    b.classList.toggle('active', parseInt(b.getAttribute('data-range')) === days);
+  });
+  drawChart(days);
+}
+
+function drawChart(days) {
+  var canvas = document.getElementById('dailyChart');
+  if (!canvas || ALL_DAILY_STATS.length === 0) return;
+
+  var ctx = canvas.getContext('2d');
+  var rect = canvas.parentElement.getBoundingClientRect();
+  var W = Math.min(rect.width - 48, 1152);
+  var H = 220;
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(2, 2);
+
+  // 取最近 days 天的数据
+  var list = ALL_DAILY_STATS.slice(-days);
+  if (list.length === 0) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#999';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('暂无数据', W / 2, H / 2);
+    return;
+  }
+
+  var PAD = { top: 20, right: 16, bottom: 36, left: 44 };
+  var chartW = W - PAD.left - PAD.right;
+  var chartH = H - PAD.top - PAD.bottom;
+
+  // 计算最大值（至少为 5，留 20% 余量）
+  var maxVal = 0;
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].count > maxVal) maxVal = list[i].count;
+  }
+  maxVal = Math.max(maxVal, 5);
+  maxVal = Math.ceil(maxVal * 1.2);
+  if (maxVal < 5) maxVal = 5;
+
+  // 清空
+  ctx.clearRect(0, 0, W, H);
+
+  // ---- 网格线 ----
+  var gridLines = 4;
+  ctx.strokeStyle = '#f0f0f0';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= gridLines; g++) {
+    var gy = PAD.top + (chartH / gridLines) * g;
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, gy);
+    ctx.lineTo(W - PAD.right, gy);
+    ctx.stroke();
+
+    // Y 轴标签
+    var val = maxVal - (maxVal / gridLines) * g;
+    ctx.fillStyle = '#999';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(val), PAD.left - 6, gy);
+  }
+
+  // ---- 绘制折线 ----
+  var points = [];
+  var stepX = chartW / Math.max(list.length - 1, 1);
+  for (var i = 0; i < list.length; i++) {
+    var px = PAD.left + stepX * i;
+    var py = PAD.top + chartH - (list[i].count / maxVal) * chartH;
+    points.push({ x: px, y: py, date: list[i].date, count: list[i].count });
+  }
+
+  // 填充渐变区域
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, PAD.top + chartH);
+  for (var i = 0; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+  ctx.lineTo(points[points.length - 1].x, PAD.top + chartH);
+  ctx.closePath();
+  var grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + chartH);
+  grad.addColorStop(0, 'rgba(102,126,234,0.25)');
+  grad.addColorStop(1, 'rgba(102,126,234,0.01)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // 折线
+  ctx.beginPath();
+  ctx.strokeStyle = '#667eea';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (var i = 0; i < points.length; i++) {
+    if (i === 0) ctx.moveTo(points[i].x, points[i].y);
+    else ctx.lineTo(points[i].x, points[i].y);
+  }
+  ctx.stroke();
+
+  // 数据点圆点
+  for (var i = 0; i < points.length; i++) {
+    ctx.beginPath();
+    ctx.arc(points[i].x, points[i].y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#667eea';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // ---- X 轴日期标签 ----
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#999';
+  var labelInterval = list.length > 14 ? Math.ceil(list.length / 7) : 1;
+  for (var i = 0; i < points.length; i++) {
+    if (i % labelInterval !== 0 && i !== points.length - 1) continue;
+    var dateStr = points[i].date;
+    var parts = dateStr.split('-');
+    var label = parts[1] + '/' + parts[2]; // MM/DD
+    ctx.fillText(label, points[i].x, PAD.top + chartH + 6);
+  }
+
+  // ---- 数据提示（悬停在最后一个点显示当前值） ----
+  // 直接在图表右上角显示最新值
+  var last = points[points.length - 1];
+  ctx.fillStyle = '#667eea';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  // 在右上角显示
+  ctx.fillText('今日: ' + last.count + ' 次', PAD.left, 2);
+}
+
+// 窗口变化时重绘（防抖）
+var resizeTimer = null;
+window.addEventListener('resize', function() {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function() {
+    if (ALL_DAILY_STATS.length > 0) drawChart(CHART_RANGE);
+  }, 300);
+});
 
 // Check URL for token
 var hash = window.location.hash;
