@@ -652,6 +652,23 @@ function setupReminder(testKey) {
   if (readyBtn) readyBtn.textContent = t('reminder.start');
 }
 
+// ---- i18n: language toggle buttons ----
+function switchLang(code) {
+  setLanguage(code);
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-lang') === code);
+  });
+}
+
+function initLangToggle() {
+  var btns = document.querySelectorAll('.lang-btn');
+  if (btns.length === 0) return;
+  var current = getCurrentLang();
+  btns.forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-lang') === current);
+  });
+}
+
 // ---- i18n: render selector with current language ----
 function renderSelector() {
   document.getElementById('selectorTitle').textContent = t('selector.title');
@@ -689,20 +706,8 @@ function renderSelector() {
 
 // ---- Event listeners ----
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize language selector
-  const langSelect = document.getElementById('langSelect');
-  if (langSelect) {
-    SUPPORTED_LANGUAGES.forEach(lang => {
-      const opt = document.createElement('option');
-      opt.value = lang.code;
-      opt.textContent = lang.name;
-      langSelect.appendChild(opt);
-    });
-    langSelect.value = getCurrentLang();
-    langSelect.addEventListener('change', (e) => {
-      setLanguage(e.target.value);
-    });
-  }
+  // Initialize language toggle buttons
+  initLangToggle();
   renderSelector();
 
   // Auto-start test if specified (for SEO sub-pages)

@@ -60,23 +60,36 @@ body {
 .lang-selector {
   display: flex;
   justify-content: flex-end;
+  gap: 4px;
   margin-bottom: 8px;
+  background: #f0f2f5;
+  border-radius: 20px;
+  padding: 2px;
+  width: fit-content;
+  margin-left: auto;
+}
+.lang-selector .lang-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  border-radius: 18px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.lang-selector .lang-btn.active {
+  background: #fff;
+  color: #667eea;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+.lang-selector .lang-btn:hover:not(.active) {
+  color: #333;
 }
 .lang-selector select {
-  padding: 6px 12px;
-  border: 1px solid #d0d0e0;
-  border-radius: 8px;
-  font-size: 13px;
-  background: #f7f8fc;
-  color: #444;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.2s;
-  max-width: 160px;
-}
-.lang-selector select:hover,
-.lang-selector select:focus {
-  border-color: #667eea;
+  display: none;
 }
 
 /* ===== Selector ===== */
@@ -458,8 +471,9 @@ body {
   .card { padding: 20px 14px; border-radius: 16px; }
   .selector-card { padding: 20px 14px; }
 
-  /* Language selector */
-  .lang-selector select { max-width: 130px; font-size: 12px; padding: 5px 8px; }
+  /* Language selector buttons */
+  .lang-selector { margin-bottom: 6px; }
+  .lang-selector .lang-btn { font-size: 12px; padding: 4px 10px; }
 
   /* Selector */
   .selector-header { margin-bottom: 20px; }
@@ -579,7 +593,7 @@ body {
   .result-card h2 { font-size: 15px; }
   .score-ring { width: 80px; height: 80px; }
   .score-value { font-size: 24px; }
-  .lang-selector select { max-width: 110px; font-size: 11px; }
+  .lang-selector .lang-btn { font-size: 11px; padding: 3px 8px; }
   .conclusion-text { font-size: 12px; }
 }
 
