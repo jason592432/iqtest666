@@ -135,10 +135,17 @@ function loadData() {
         '<div class="stat-card"><div class="lbl">最低分</div><div class="num">' + s.minScore + '</div></div>';
 
       // By test
+      var TEST_NAMES = {
+        wais: '韦氏成人',
+        wisc: '韦氏儿童',
+        binet: '斯坦福-比奈',
+        raven: '瑞文推理'
+      };
       var testsHtml = '';
       for (var t in data.byTest) {
         var info = data.byTest[t];
-        testsHtml += '<div class="stat-card"><div class="lbl">' + t + '</div><div class="num" style="font-size:20px;">' + info.count + '次</div><div style="font-size:11px;color:#999;">均分' + Math.round(info.total/info.count) + '</div></div>';
+        var name = TEST_NAMES[t] || t;
+        testsHtml += '<div class="stat-card"><div class="lbl">' + name + '</div><div class="num" style="font-size:20px;">' + info.count + '次</div><div style="font-size:11px;color:#999;">均分' + Math.round(info.total/info.count) + '</div></div>';
       }
       stats.innerHTML += testsHtml;
 
@@ -162,7 +169,7 @@ function loadData() {
 
         return '<tr>' +
           '<td>' + fmtTime(r.timestamp) + '</td>' +
-          '<td><span class="tag ' + tagClass + '">' + (r.test || '') + '</span></td>' +
+          '<td><span class="tag ' + tagClass + '">' + (TEST_NAMES[r.test] || r.test || '') + '</span></td>' +
           '<td style="font-weight:bold;">' + score + '</td>' +
           '<td>' + (r.label || '') + '</td>' +
           '<td style="font-size:12px;color:#888;font-family:monospace;">' + (r.ip || '') + '</td>' +
