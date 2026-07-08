@@ -3,7 +3,7 @@
 // 支持：WAIS / WISC / Binet / Raven
 // ============================================================
 
-const optLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
+const optLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 // ---- 测试注册表 ----
 const TEST_REGISTRY = {
@@ -62,9 +62,15 @@ let autoJumpTimer = null;
 
 // ---- i18n helpers for questions ----
 function qText(q) {
+  if (currentTest && currentTest.isSvgTest) {
+    return '第' + (currentTest.questions.indexOf(q) + 1) + '题（图形推理）';
+  }
   return currentLangCode === 'zh-CN' ? q.question : (q.questionEn || q.question);
 }
 function oText(q, i) {
+  if (currentTest && currentTest.isSvgTest) {
+    return '选项 ' + (i + 1);
+  }
   if (currentLangCode === 'zh-CN') return q.options[i];
   return (q.optionsEn && q.optionsEn[i]) || q.options[i];
 }
@@ -186,8 +192,10 @@ function renderQuestion() {
   // Question content: SVG image or text
   if (els.questionText) {
     if (isSvg && q.svg) {
-      els.questionText.innerHTML = '<div class="svg-question-wrap"><img class="svg-question" src="' + q.svg + '" alt="第' + (currentIndex + 1) + '题" loading="lazy"></div>';
+      els.questionText.innerHTML = '<div class="svg-question-wrap"><img class="svg-question" src="' + q.svg + '" alt="第' + (currentIndex + 1) + '题"></div>';
       els.questionText.style.display = 'block';
+      // 预加载后续3道题的SVG
+      preloadNextSvg(currentIndex);
     } else {
       els.questionText.textContent = qText(q);
       els.questionText.style.display = '';
@@ -230,6 +238,22 @@ function renderQuestion() {
   // SEO: update page title
   const testName = currentLangCode === 'zh-CN' ? currentTest.name : (currentTest.nameEn || currentTest.name);
   document.title = testName + ' · ' + t('quiz.question', { n: currentIndex + 1 });
+}
+
+// 预加载后续SVG图片
+var preloadedSvg = {};
+function preloadNextSvg(fromIndex) {
+  if (!currentTest || !currentTest.isSvgTest) return;
+  for (var pi = 1; pi <= 3; pi++) {
+    var ni = fromIndex + pi;
+    if (ni >= currentTest.questions.length) break;
+    var sq = currentTest.questions[ni];
+    if (sq && sq.svg && !preloadedSvg[sq.svg]) {
+      preloadedSvg[sq.svg] = true;
+      var img = new Image();
+      img.src = sq.svg;
+    }
+  }
 }
 
 function selectOption(index) {
@@ -316,7 +340,7 @@ function calcScore() {
     }
   }
 
-  return { totalRaw, maxRaw, correctCount, unanswered, total: currentTest.questions.length, fsiq, indexScores, domains };
+  return { totalRaw, maxRaw, correctCount, unanswered, total: currentTest.questions.length, fsiq, indexScores, domains, _rawAnswers: answers };
 }
 
 // ---- Results ----
@@ -422,7 +446,9 @@ function showResult() {
       } else if (isCorrect) {
         statusHtml = '<span class="detail-correct">' + t('detail.correct', { n: pts }) + '</span>';
       } else {
-        statusHtml = '<span class="detail-wrong">' + t('detail.wrong', { user: optLabels[ans], correct: optLabels[q.correct] }) + '</span>';
+        var userLabel = currentTest && currentTest.isSvgTest ? (ans + 1) : optLabels[ans];
+        var correctLabel = currentTest && currentTest.isSvgTest ? (q.correct + 1) : optLabels[q.correct];
+        statusHtml = '<span class="detail-wrong">' + t('detail.wrong', { user: userLabel, correct: correctLabel }) + '</span>';
       }
 
       div.innerHTML = `
@@ -495,17 +521,22 @@ function showResult() {
 
       // Error list
       if (els.errorList) {
-        const labels = ['A','B','C','D','E','F'];
+        const labels = ['A','B','C','D','E','F','G','H'];
+        const isSvgTest = currentTest && currentTest.isSvgTest;
         let lHtml = '';
         wrongItems.forEach(item => {
           const q = item.question;
           const ua = item.userAnswer;
           lHtml += '<div class="error-item">';
-          lHtml += '<div class="e-header"><span>'+t('quiz.question', { n: item.idx + 1 })+'</span><span style="font-weight:400;font-size:12px;color:#999;">'+(dText(q.difficulty)||'')+'</span></div>';
-          lHtml += '<div class="e-question">'+qText(q).replace(/\n/g, '<br>')+'</div>';
+          lHtml += '<div class="e-header"><span>'+t('quiz.question', { n: item.idx + 1 })+'</span><span style="font-weight:400;font-size:12px;color:#999;">'+(q.difficulty ? dText(q.difficulty) : '')+'</span></div>';
+          if (isSvgTest && q.svg) {
+            lHtml += '<div class="e-question" style="background:#1a1a2e;border-radius:8px;padding:8px;text-align:center;"><img src="'+q.svg+'" alt="第'+(item.idx+1)+'题" style="max-width:180px;height:auto;"></div>';
+          } else {
+            lHtml += '<div class="e-question">'+qText(q).replace(/\n/g, '<br>')+'</div>';
+          }
           lHtml += '<div class="e-answers">';
-          lHtml += t('error.yourAnswer') + '<span class="e-wrong-ans">'+labels[ua]+'. '+oText(q, ua)+'</span><br>';
-          lHtml += t('error.correctAnswer') + '<span class="e-correct-ans">'+labels[q.correct]+'. '+oText(q, q.correct)+'</span>';
+          lHtml += t('error.yourAnswer') + '<span class="e-wrong-ans">'+(labels[ua] || (ua+1))+'. '+(isSvgTest ? '选项 '+(ua+1) : oText(q, ua))+'</span><br>';
+          lHtml += t('error.correctAnswer') + '<span class="e-correct-ans">'+(labels[q.correct] || (q.correct+1))+'. '+(isSvgTest ? '选项 '+(q.correct+1) : oText(q, q.correct))+'</span>';
           lHtml += '</div>';
           if (q.explanation) lHtml += '<div class="e-explain">' + t('error.explanation') + eText(q)+'</div>';
           lHtml += '</div>';
