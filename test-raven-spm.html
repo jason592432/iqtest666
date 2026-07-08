@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>瑞文标准推理测验 (SPM) - 验证测试</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app" style="padding:12px;max-width:800px;margin:0 auto;">
+
+  <div id="selector" class="page active">
+    <div class="card selector-card" style="padding:28px 24px;">
+      <div class="selector-header" style="margin-bottom:16px;">
+        <div class="selector-logo">🔷</div>
+        <h1 style="font-size:22px;margin:6px 0;">瑞文标准推理测验 (SPM)</h1>
+        <p style="color:#888;font-size:13px;">验证测试 · 60道全图形矩阵推理题 · 40分钟</p>
+      </div>
+
+      <div style="background:#f5f5ff;border-radius:10px;padding:16px;margin-bottom:16px;font-size:13px;color:#555;">
+        <p style="margin:4px 0;">⏱ 共 <strong>60</strong> 题，时限 <strong>40</strong> 分钟</p>
+        <p style="margin:4px 0;">📐 每题显示一个图形矩阵，选出最能补全规律的一项</p>
+        <p style="margin:4px 0;">🔢 Set A-B 每题 <strong>6</strong> 个选项，Set C-E 每题 <strong>8</strong> 个选项</p>
+        <p style="margin:4px 0;">⚠️ 结果仅供参考，不作为临床评估依据</p>
+      </div>
+
+      <button class="btn btn-primary" id="startBtn" style="width:100%;padding:14px;font-size:16px;" onclick="startTest()">开始答题</button>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div id="quiz" class="page" style="display:none;">
+    <div class="card quiz-card" style="padding:20px;">
+      <div class="quiz-header">
+        <div class="quiz-meta">
+          <span class="badge" id="categoryBadge">Set A</span>
+          <span id="questionIndex">1 / 60</span>
+          <span class="timer" id="timerDisplay">40:00</span>
+          <button class="btn-home" onclick="confirmBack()" style="font-size:12px;">返回</button>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div id="questionContainer">
+        <div class="svg-question-wrap" id="svgWrap" style="text-align:center;">
+          <img class="svg-question" id="svgImg" alt="题目" style="max-width:100%;">
+        </div>
+        <div class="options-svg opt-count-6" id="optionsContainer"></div>
+      </div>
+      <div class="quiz-footer" style="margin-top:12px;">
+        <button class="btn btn-secondary" id="prevBtn" onclick="prevQ()" disabled>上一题</button>
+        <span id="questionNum" class="q-num">第 1 题</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="result" class="page" style="display:none;">
+    <div class="card result-card" style="text-align:center;padding:28px;">
+      <h2 style="margin-bottom:16px;">✅ 测试完成</h2>
+      <div id="resultContent"></div>
+      <button class="btn btn-primary" onclick="location.reload()" style="margin-top:16px;">重新测试</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============ 测试数据 ============
+const QUESTIONS = [
+  {id:1,  svg:'/raven-spm/1.svg',  optCount:6, correct:3, series:'A'},
+  {id:2,  svg:'/raven-spm/2.svg',  optCount:6, correct:4, series:'A'},
+  {id:3,  svg:'/raven-spm/3.svg',  optCount:6, correct:0, series:'A'},
+  {id:4,  svg:'/raven-spm/4.svg',  optCount:6, correct:1, series:'A'},
+  {id:5,  svg:'/raven-spm/5.svg',  optCount:6, correct:5, series:'A'},
+  {id:6,  svg:'/raven-spm/6.svg',  optCount:6, correct:2, series:'A'},
+  {id:7,  svg:'/raven-spm/7.svg',  optCount:6, correct:5, series:'A'},
+  {id:8,  svg:'/raven-spm/8.svg',  optCount:6, correct:1, series:'A'},
+  {id:9,  svg:'/raven-spm/9.svg',  optCount:6, correct:0, series:'A'},
+  {id:10, svg:'/raven-spm/10.svg', optCount:6, correct:2, series:'A'},
+  {id:11, svg:'/raven-spm/11.svg', optCount:6, correct:3, series:'A'},
+  {id:12, svg:'/raven-spm/12.svg', optCount:6, correct:4, series:'A'},
+  {id:13, svg:'/raven-spm/13.svg', optCount:6, correct:1, series:'B'},
+  {id:14, svg:'/raven-spm/14.svg', optCount:6, correct:5, series:'B'},
+  {id:15, svg:'/raven-spm/15.svg', optCount:6, correct:0, series:'B'},
+  {id:16, svg:'/raven-spm/16.svg', optCount:6, correct:1, series:'B'},
+  {id:17, svg:'/raven-spm/17.svg', optCount:6, correct:0, series:'B'},
+  {id:18, svg:'/raven-spm/18.svg', optCount:6, correct:2, series:'B'},
+  {id:19, svg:'/raven-spm/19.svg', optCount:6, correct:4, series:'B'},
+  {id:20, svg:'/raven-spm/20.svg', optCount:6, correct:5, series:'B'},
+  {id:21, svg:'/raven-spm/21.svg', optCount:6, correct:3, series:'B'},
+  {id:22, svg:'/raven-spm/22.svg', optCount:6, correct:2, series:'B'},
+  {id:23, svg:'/raven-spm/23.svg', optCount:6, correct:3, series:'B'},
+  {id:24, svg:'/raven-spm/24.svg', optCount:6, correct:4, series:'B'},
+  {id:25, svg:'/raven-spm/25.svg', optCount:8, correct:7, series:'C'},
+  {id:26, svg:'/raven-spm/26.svg', optCount:8, correct:1, series:'C'},
+  {id:27, svg:'/raven-spm/27.svg', optCount:8, correct:2, series:'C'},
+  {id:28, svg:'/raven-spm/28.svg', optCount:8, correct:7, series:'C'},
+  {id:29, svg:'/raven-spm/29.svg', optCount:8, correct:6, series:'C'},
+  {id:30, svg:'/raven-spm/30.svg', optCount:8, correct:3, series:'C'},
+  {id:31, svg:'/raven-spm/31.svg', optCount:8, correct:4, series:'C'},
+  {id:32, svg:'/raven-spm/32.svg', optCount:8, correct:0, series:'C'},
+  {id:33, svg:'/raven-spm/33.svg', optCount:8, correct:6, series:'C'},
+  {id:34, svg:'/raven-spm/34.svg', optCount:8, correct:5, series:'C'},
+  {id:35, svg:'/raven-spm/35.svg', optCount:8, correct:0, series:'C'},
+  {id:36, svg:'/raven-spm/36.svg', optCount:8, correct:1, series:'C'},
+  {id:37, svg:'/raven-spm/37.svg', optCount:8, correct:2, series:'D'},
+  {id:38, svg:'/raven-spm/38.svg', optCount:8, correct:3, series:'D'},
+  {id:39, svg:'/raven-spm/39.svg', optCount:8, correct:2, series:'D'},
+  {id:40, svg:'/raven-spm/40.svg', optCount:8, correct:6, series:'D'},
+  {id:41, svg:'/raven-spm/41.svg', optCount:8, correct:7, series:'D'},
+  {id:42, svg:'/raven-spm/42.svg', optCount:8, correct:5, series:'D'},
+  {id:43, svg:'/raven-spm/43.svg', optCount:8, correct:4, series:'D'},
+  {id:44, svg:'/raven-spm/44.svg', optCount:8, correct:3, series:'D'},
+  {id:45, svg:'/raven-spm/45.svg', optCount:8, correct:0, series:'D'},
+  {id:46, svg:'/raven-spm/46.svg', optCount:8, correct:1, series:'D'},
+  {id:47, svg:'/raven-spm/47.svg', optCount:8, correct:4, series:'D'},
+  {id:48, svg:'/raven-spm/48.svg', optCount:8, correct:5, series:'D'},
+  {id:49, svg:'/raven-spm/49.svg', optCount:8, correct:6, series:'E'},
+  {id:50, svg:'/raven-spm/50.svg', optCount:8, correct:5, series:'E'},
+  {id:51, svg:'/raven-spm/51.svg', optCount:8, correct:7, series:'E'},
+  {id:52, svg:'/raven-spm/52.svg', optCount:8, correct:1, series:'E'},
+  {id:53, svg:'/raven-spm/53.svg', optCount:8, correct:0, series:'E'},
+  {id:54, svg:'/raven-spm/54.svg', optCount:8, correct:4, series:'E'},
+  {id:55, svg:'/raven-spm/55.svg', optCount:8, correct:0, series:'E'},
+  {id:56, svg:'/raven-spm/56.svg', optCount:8, correct:5, series:'E'},
+  {id:57, svg:'/raven-spm/57.svg', optCount:8, correct:2, series:'E'},
+  {id:58, svg:'/raven-spm/58.svg', optCount:8, correct:1, series:'E'},
+  {id:59, svg:'/raven-spm/59.svg', optCount:8, correct:3, series:'E'},
+  {id:60, svg:'/raven-spm/60.svg', optCount:8, correct:4, series:'E'},
+];
+
+// ============ 状态 ============
+let currentIndex = 0;
+let answers = new Array(60).fill(-1);
+let timeLeft = 40 * 60;
+let timer = null;
+let submitted = false;
+
+// ============ 开始 ============
+function startTest() {
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  showQuestion();
+  timer = setInterval(tick, 1000);
+}
+
+function tick() {
+  if (submitted) return;
+  timeLeft--;
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  document.getElementById('timerDisplay').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  if (timeLeft <= 0) submitTest();
+}
+
+// ============ 渲染题目 ============
+function showQuestion() {
+  const q = QUESTIONS[currentIndex];
+  document.getElementById('categoryBadge').textContent = 'Set ' + q.series;
+  document.getElementById('questionIndex').textContent = (currentIndex + 1) + ' / 60';
+  document.getElementById('questionNum').textContent = '第 ' + (currentIndex + 1) + ' 题';
+  document.getElementById('progressFill').style.width = ((currentIndex + 1) / 60 * 100) + '%';
+  document.getElementById('svgImg').src = q.svg;
+
+  const container = document.getElementById('optionsContainer');
+  container.className = 'options-svg opt-count-' + q.optCount;
+  container.innerHTML = '';
+  for (let i = 0; i < q.optCount; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'option option-num' + (answers[currentIndex] === i ? ' selected' : '');
+    btn.textContent = i + 1;
+    const idx = i;
+    btn.onclick = function() { selectOption(idx); };
+    container.appendChild(btn);
+  }
+
+  document.getElementById('prevBtn').disabled = currentIndex === 0;
+}
+
+function selectOption(i) {
+  if (submitted) return;
+  answers[currentIndex] = i;
+  document.querySelectorAll('#optionsContainer .option').forEach(function(el, idx) {
+    el.classList.toggle('selected', idx === i);
+  });
+  // Auto advance
+  setTimeout(function() {
+    if (currentIndex < 59) {
+      currentIndex++;
+      showQuestion();
+    } else {
+      submitTest();
+    }
+  }, 350);
+}
+
+function prevQ() {
+  if (currentIndex > 0) { currentIndex--; showQuestion(); }
+}
+
+// ============ 提交 ============
+function submitTest() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timer);
+
+  let correct = 0;
+  for (let i = 0; i < 60; i++) {
+    if (answers[i] === QUESTIONS[i].correct) correct++;
+  }
+
+  // SPM scoring: simple percentage-based conversion
+  const pct = correct / 60;
+  let iq;
+  if (correct >= 58) iq = 140 + (correct - 58) * 5;
+  else if (correct >= 53) iq = 130 + (correct - 53) * 2;
+  else if (correct >= 45) iq = 115 + (correct - 45) * 1.8;
+  else if (correct >= 36) iq = 100 + (correct - 36) * 1.6;
+  else if (correct >= 28) iq = 90 + (correct - 28) * 1.2;
+  else if (correct >= 20) iq = 80 + (correct - 20) * 1.2;
+  else iq = 70 + Math.max(0, correct - 10) * 1;
+
+  iq = Math.round(Math.min(Math.max(iq, 60), 160));
+
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('resultContent').innerHTML =
+    '<div style="font-size:48px;margin:12px 0;">🧠</div>' +
+    '<div style="font-size:14px;color:#888;">你的IQ分数</div>' +
+    '<div style="font-size:56px;font-weight:bold;color:#667eea;margin:8px 0;">' + iq + '</div>' +
+    '<div style="font-size:16px;color:#555;margin:8px 0;">' + getLabel(iq) + '</div>' +
+    '<div style="background:#f5f5ff;border-radius:10px;padding:16px;margin:16px 0;text-align:left;">' +
+      '<p style="margin:4px 0;">✅ 答对：<strong>' + correct + '</strong> / 60 题</p>' +
+      '<p style="margin:4px 0;">📊 正确率：<strong>' + Math.round(pct * 100) + '%</strong></p>' +
+      '<p style="margin:4px 0;">🔢 用时：<strong>' + Math.floor((40*60 - timeLeft) / 60) + '</strong> 分钟</p>' +
+    '</div>' +
+    '<div style="font-size:13px;color:#666;margin-top:8px;">' + getDesc(iq) + '</div>';
+}
+
+function confirmBack() {
+  if (answers.some(function(a) { return a !== -1; })) {
+    if (!confirm('确定要返回吗？当前进度将丢失。')) return;
+  }
+  clearInterval(timer);
+  location.reload();
+}
+
+function getLabel(iq) {
+  if (iq >= 130) return '非常优秀';
+  if (iq >= 120) return '优秀';
+  if (iq >= 110) return '中上';
+  if (iq >= 90) return '中等';
+  if (iq >= 80) return '中下';
+  return '待提升';
+}
+
+function getDesc(iq) {
+  if (iq >= 130) return '你的抽象推理能力非常出色，能从复杂图形中快速提取规律。';
+  if (iq >= 120) return '你的图形推理能力优秀，善于发现抽象规律和逻辑关系。';
+  if (iq >= 110) return '你的抽象推理能力良好，具备较强的模式识别能力。';
+  if (iq >= 90) return '你的推理能力处于正常范围。';
+  return '测试分数偏低，可能受状态影响，建议休息后重测。';
+}
+</script>
+
+<style>
+  .options-svg { display:grid; gap:8px; }
+  .options-svg.opt-count-6 { grid-template-columns:repeat(3,1fr); }
+  .options-svg.opt-count-8 { grid-template-columns:repeat(4,1fr); }
+  .options-svg .option {
+    text-align:center; font-size:18px; font-weight:600;
+    padding:14px 8px; min-height:48px;
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid #e8e8f0; border-radius:12px;
+    cursor:pointer; background:white; transition:all 0.15s;
+  }
+  .options-svg .option:hover { border-color:#667eea; background:#f8f8ff; }
+  .options-svg .option.selected { border-color:#667eea; background:#eef0ff; color:#667eea; font-weight:700; }
+  .svg-question-wrap { text-align:center; margin:4px 0 12px; background:#fafbff; border-radius:12px; padding:8px; }
+  .svg-question { max-width:100%; height:auto; }
+  .btn-primary { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; padding:12px 32px; border-radius:25px; font-size:15px; cursor:pointer; font-weight:600; }
+  .btn-secondary { background:#f0f0f5; color:#555; border:none; padding:10px 20px; border-radius:20px; font-size:14px; cursor:pointer; }
+  .btn-secondary:disabled { opacity:0.4; cursor:default; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:10px; font-size:11px; background:#eef0ff; color:#667eea; }
+  .quiz-meta { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .progress-bar { height:4px; background:#e8e8f0; border-radius:2px; margin-bottom:12px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,#667eea,#764ba2); border-radius:2px; transition:width 0.3s; }
+  .quiz-footer { display:flex; align-items:center; gap:12px; }
+  .q-num { flex:1; text-align:center; font-size:14px; color:#999; }
+  .timer { font-size:14px; font-weight:600; color:#e53935; margin-left:auto; }
+  .btn-home { background:none; border:1px solid #ddd; border-radius:14px; padding:4px 12px; font-size:12px; color:#666; cursor:pointer; }
+  .card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.08); }
+</style>
+</body>
+</html>
