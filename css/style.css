@@ -254,7 +254,7 @@ body {
 .svg-question-wrap {
   text-align: center;
   margin: 8px 0 16px;
-  background: #fafbff;
+  background: #2a2a40;
   border-radius: 12px;
   padding: 12px;
   overflow: hidden;
@@ -264,6 +264,8 @@ body {
   height: auto;
   display: inline-block;
   border-radius: 6px;
+  background: #2a2a40;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
 }
 .options-svg {
   display: grid;
