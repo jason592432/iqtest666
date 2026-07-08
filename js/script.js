@@ -163,7 +163,8 @@ function renderQuestion() {
   // Category badge / series badge
   if (els.categoryBadge) {
     if (isSvg && q.series) {
-      els.categoryBadge.textContent = 'Set ' + q.series + ' · ' + currentLangCode === 'zh-CN' ? ('第' + q.series + '组') : ('Series ' + q.series);
+      var seriesName = currentLangCode === 'zh-CN' ? ('第' + q.series + '组') : ('Series ' + q.series);
+      els.categoryBadge.textContent = 'Set ' + q.series + ' · ' + seriesName;
       els.categoryBadge.style.display = 'inline';
     } else if (q.type && currentTest.indexConfig) {
       const cfg = currentTest.indexConfig[q.type];
