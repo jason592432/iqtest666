@@ -10,7 +10,8 @@ const TEST_REGISTRY = {
   wais: typeof TEST_WAIS !== 'undefined' ? TEST_WAIS : null,
   wisc: typeof TEST_WISC !== 'undefined' ? TEST_WISC : null,
   binet: typeof TEST_BINET !== 'undefined' ? TEST_BINET : null,
-  raven: typeof TEST_RAVEN !== 'undefined' ? TEST_RAVEN : null
+  raven: typeof TEST_RAVEN !== 'undefined' ? TEST_RAVEN : null,
+  'raven-spm': typeof TEST_RAVEN_SPM !== 'undefined' ? TEST_RAVEN_SPM : null
 };
 
 // ---- DOM refs ----
@@ -157,10 +158,14 @@ function renderQuestion() {
   if (!currentTest) return;
   const q = currentTest.questions[currentIndex];
   const total = currentTest.questions.length;
+  const isSvg = currentTest.isSvgTest;
 
-  // Category badge
+  // Category badge / series badge
   if (els.categoryBadge) {
-    if (q.type && currentTest.indexConfig) {
+    if (isSvg && q.series) {
+      els.categoryBadge.textContent = 'Set ' + q.series + ' · ' + currentLangCode === 'zh-CN' ? ('第' + q.series + '组') : ('Series ' + q.series);
+      els.categoryBadge.style.display = 'inline';
+    } else if (q.type && currentTest.indexConfig) {
       const cfg = currentTest.indexConfig[q.type];
       const badgeType = currentLangCode === 'zh-CN' ? (cfg ? cfg.short || q.type : q.type) : (cfg ? cfg.shortEn || cfg.short || q.type : q.type);
       els.categoryBadge.textContent = badgeType + ' · ' + sText(q);
@@ -176,20 +181,46 @@ function renderQuestion() {
   if (els.questionIndex) els.questionIndex.textContent = `${currentIndex + 1} / ${total}`;
   if (els.progressFill) els.progressFill.style.width = `${((currentIndex + 1) / total) * 100}%`;
   if (els.questionNum) els.questionNum.textContent = t('quiz.question', { n: currentIndex + 1 });
-  if (els.questionText) els.questionText.textContent = qText(q);
 
-  // Options
+  // Question content: SVG image or text
+  if (els.questionText) {
+    if (isSvg && q.svg) {
+      els.questionText.innerHTML = '<div class="svg-question-wrap"><img class="svg-question" src="' + q.svg + '" alt="第' + (currentIndex + 1) + '题" loading="lazy"></div>';
+      els.questionText.style.display = 'block';
+    } else {
+      els.questionText.textContent = qText(q);
+      els.questionText.style.display = '';
+    }
+  }
+
+  // Options: numbered buttons for SVG, text for normal
   if (els.optionsContainer) {
     els.optionsContainer.innerHTML = '';
-    q.options.forEach((opt, i) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'option' + (answers[currentIndex] === i ? ' selected' : '');
-      const label = q.options.length <= 6 ? optLabels[i] + '. ' : '';
-      btn.textContent = label + oText(q, i);
-      btn.addEventListener('click', () => selectOption(i));
-      els.optionsContainer.appendChild(btn);
-    });
+    els.optionsContainer.className = isSvg ? ('options-svg opt-count-' + (q.optCount || 6)) : '';
+    if (isSvg) {
+      // Numbered option buttons for SVG test
+      var count = q.optCount || 6;
+      for (var i = 0; i < count; i++) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option option-num' + (answers[currentIndex] === i ? ' selected' : '');
+        btn.textContent = i + 1;
+        (function(idx) {
+          btn.addEventListener('click', function() { selectOption(idx); });
+        })(i);
+        els.optionsContainer.appendChild(btn);
+      }
+    } else {
+      q.options.forEach(function(opt, i) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option' + (answers[currentIndex] === i ? ' selected' : '');
+        var label = q.options.length <= 6 ? optLabels[i] + '. ' : '';
+        btn.textContent = label + oText(q, i);
+        btn.addEventListener('click', function() { selectOption(i); });
+        els.optionsContainer.appendChild(btn);
+      });
+    }
   }
 
   const prevBtn = $('prevBtn');

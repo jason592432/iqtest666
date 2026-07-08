@@ -250,6 +250,42 @@ body {
 .option:hover { border-color: #667eea; background: #f8f8ff; }
 .option.selected { border-color: #667eea; background: #eef0ff; color: #667eea; font-weight: 600; }
 
+/* SVG测试题目样式 */
+.svg-question-wrap {
+  text-align: center;
+  margin: 8px 0 16px;
+  background: #fafbff;
+  border-radius: 12px;
+  padding: 12px;
+  overflow: hidden;
+}
+.svg-question {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  border-radius: 6px;
+}
+.options-svg {
+  display: grid;
+  gap: 8px;
+}
+.options-svg.opt-count-6 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.options-svg.opt-count-8 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.options-svg .option {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 14px 8px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .quiz-footer {
   display: flex;
   align-items: center;
