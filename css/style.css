@@ -275,30 +275,26 @@ body {
 }
 .svg-options-overlay {
   position: absolute;
-  top: 75%;
-  bottom: 3%;
-  left: 0;
-  width: 100%;
+  left: 2.5%;
+  width: 95%;
   display: grid;
   pointer-events: none;
   z-index: 2;
 }
 .svg-options-overlay.opt-count-6 {
+  top: 80%;
+  bottom: 3%;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: 1fr 1fr;
 }
 .svg-options-overlay.opt-count-8 {
+  top: 82%;
+  bottom: 3%;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: 1fr 1fr;
 }
 .svg-options-overlay .svg-opt-btn {
   pointer-events: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.55);
   border: 2px solid transparent;
   border-radius: 6px;
   background: rgba(102, 126, 234, 0.0);
@@ -310,13 +306,10 @@ body {
 .svg-options-overlay .svg-opt-btn:hover {
   border-color: rgba(102, 126, 234, 0.5);
   background: rgba(102, 126, 234, 0.15);
-  color: white;
 }
 .svg-options-overlay .svg-opt-btn.selected {
   border-color: #667eea;
   background: rgba(102, 126, 234, 0.25);
-  color: white;
-  font-weight: 700;
 }
 .options-svg {
   display: grid;

@@ -201,7 +201,6 @@ function renderQuestion() {
         for (var i = 0; i < count; i++) {
           var btn = document.createElement('div');
           btn.className = 'svg-opt-btn' + (answers[currentIndex] === i ? ' selected' : '');
-          btn.textContent = i + 1;
           btn.dataset.index = i;
           (function(idx) {
             btn.addEventListener('click', function() { selectOption(idx); });
