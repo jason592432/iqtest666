@@ -192,8 +192,23 @@ function renderQuestion() {
   // Question content: SVG image or text
   if (els.questionText) {
     if (isSvg && q.svg) {
-      els.questionText.innerHTML = '<div class="svg-question-wrap"><img class="svg-question" src="' + q.svg + '" alt="第' + (currentIndex + 1) + '题"></div>';
+      var count = q.optCount || 6;
+      els.questionText.innerHTML = '<div class="svg-question-wrap"><div class="svg-img-wrapper"><img class="svg-question" src="' + q.svg + '" alt="第' + (currentIndex + 1) + '题"><div class="svg-options-overlay opt-count-' + count + '" id="svgOptionsOverlay"></div></div></div>';
       els.questionText.style.display = 'block';
+      // Render overlay buttons
+      var overlay = document.getElementById('svgOptionsOverlay');
+      if (overlay) {
+        for (var i = 0; i < count; i++) {
+          var btn = document.createElement('div');
+          btn.className = 'svg-opt-btn' + (answers[currentIndex] === i ? ' selected' : '');
+          btn.textContent = i + 1;
+          btn.dataset.index = i;
+          (function(idx) {
+            btn.addEventListener('click', function() { selectOption(idx); });
+          })(i);
+          overlay.appendChild(btn);
+        }
+      }
       // 预加载后续3道题的SVG
       preloadNextSvg(currentIndex);
     } else {
@@ -202,24 +217,15 @@ function renderQuestion() {
     }
   }
 
-  // Options: numbered buttons for SVG, text for normal
+  // Options: hide for SVG (overlay is in image), text for normal
   if (els.optionsContainer) {
-    els.optionsContainer.innerHTML = '';
-    els.optionsContainer.className = isSvg ? ('options-svg opt-count-' + (q.optCount || 6)) : '';
     if (isSvg) {
-      // Numbered option buttons for SVG test
-      var count = q.optCount || 6;
-      for (var i = 0; i < count; i++) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'option option-num' + (answers[currentIndex] === i ? ' selected' : '');
-        btn.textContent = i + 1;
-        (function(idx) {
-          btn.addEventListener('click', function() { selectOption(idx); });
-        })(i);
-        els.optionsContainer.appendChild(btn);
-      }
+      els.optionsContainer.style.display = 'none';
+      els.optionsContainer.innerHTML = '';
     } else {
+      els.optionsContainer.style.display = '';
+      els.optionsContainer.innerHTML = '';
+      els.optionsContainer.className = 'options';
       q.options.forEach(function(opt, i) {
         var btn = document.createElement('button');
         btn.type = 'button';
@@ -258,6 +264,14 @@ function preloadNextSvg(fromIndex) {
 
 function selectOption(index) {
   answers[currentIndex] = index;
+  // Update SVG overlay buttons if present
+  var overlay = document.getElementById('svgOptionsOverlay');
+  if (overlay) {
+    overlay.querySelectorAll('.svg-opt-btn').forEach(function(el, i) {
+      el.classList.toggle('selected', i === index);
+    });
+  }
+  // Update regular option buttons
   document.querySelectorAll('.option').forEach((el, i) => el.classList.toggle('selected', i === index));
   // 自动跳转下一题
   if (autoJumpTimer) clearTimeout(autoJumpTimer);
