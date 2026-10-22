@@ -7,18 +7,37 @@
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:-apple-system,"PingFang SC",sans-serif; background:#f0f2f5; padding:20px; color:#333; }
-    .header { max-width:1200px; margin:0 auto 20px; display:flex; justify-content:space-between; align-items:center; }
+    .header { max-width:1200px; margin:0 auto 16px; display:flex; justify-content:space-between; align-items:center; }
     .header h1 { font-size:22px; color:#1a1a2e; }
     .header a { color:#667eea; text-decoration:none; font-size:14px; }
     .login-box { max-width:360px; margin:100px auto; background:#fff; border-radius:16px; padding:32px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.1); }
     .login-box h2 { margin-bottom:20px; font-size:18px; }
     .login-box input { width:100%; padding:10px 14px; border:1px solid #ddd; border-radius:10px; font-size:14px; margin-bottom:12px; }
     .login-box button { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; padding:10px 32px; border-radius:20px; font-size:14px; cursor:pointer; }
-    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; max-width:1200px; margin:0 auto 20px; }
+
+    .range-bar { max-width:1200px; margin:0 auto 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .range-bar .rlbl { font-size:13px; color:#667; }
+    .chart-tabs { display:flex; gap:4px; background:#e8eaf0; border-radius:20px; padding:3px; }
+    .chart-tabs button { border:none; background:transparent; padding:6px 16px; border-radius:18px; font-size:13px; color:#666; cursor:pointer; transition:all 0.2s; }
+    .chart-tabs button.active { background:#fff; color:#667eea; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    .chart-tabs button:hover:not(.active) { color:#333; }
+    .auto-hint { font-size:12px; color:#99a; margin-left:auto; }
+
+    .section-title { max-width:1200px; margin:24px auto 12px; font-size:16px; color:#1a1a2e; font-weight:600; display:flex; align-items:center; gap:6px; }
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; max-width:1200px; margin:0 auto 16px; }
     .stat-card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); text-align:center; }
-    .stat-card .num { font-size:28px; font-weight:bold; color:#667eea; margin-top:4px; }
+    .stat-card .num { font-size:26px; font-weight:bold; color:#667eea; margin-top:4px; }
     .stat-card .lbl { font-size:12px; color:#889; }
-    .table-wrap { max-width:1200px; margin:0 auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+    .stat-card .sub { font-size:11px; color:#aab; margin-top:2px; }
+
+    .chart-wrap { max-width:1200px; margin:0 auto 16px; background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06); padding:18px 22px 14px; }
+    .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .chart-header .title { font-size:14px; font-weight:600; color:#333; }
+    .chart-legend { display:flex; gap:14px; font-size:12px; color:#778; }
+    .chart-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:middle; }
+    #dailyChart, #visitChart { width:100%; height:220px; }
+
+    .table-wrap { max-width:1200px; margin:0 auto 16px; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
     table { width:100%; border-collapse:collapse; }
     th { background:#f8f9ff; padding:12px 14px; font-size:12px; color:#667; text-align:left; border-bottom:2px solid #eef; white-space:nowrap; }
     td { padding:10px 14px; font-size:13px; border-bottom:1px solid #f0f0f0; }
@@ -30,17 +49,19 @@
     .tag-gray { background:#f0f0f0; color:#666; }
     .loading { text-align:center; padding:40px; color:#999; }
     .error { text-align:center; padding:40px; color:#e53935; }
-    .ip-btn { font-size:11px; color:#667eea; cursor:pointer; text-decoration:underline; }
 
-    /* 图表区域 */
-    .chart-wrap { max-width:1200px; margin:0 auto 20px; background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06); padding:20px 24px 16px; }
-    .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .chart-header .title { font-size:14px; font-weight:600; color:#333; }
-    .chart-tabs { display:flex; gap:4px; background:#f0f2f5; border-radius:20px; padding:2px; }
-    .chart-tabs button { border:none; background:transparent; padding:6px 16px; border-radius:18px; font-size:13px; color:#666; cursor:pointer; transition:all 0.2s; }
-    .chart-tabs button.active { background:#fff; color:#667eea; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
-    .chart-tabs button:hover:not(.active) { color:#333; }
-    #dailyChart { width:100%; height:220px; }
+    .two-col { max-width:1200px; margin:0 auto 16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+    .panel { background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06); padding:16px 18px; }
+    .panel h3 { font-size:13px; font-weight:600; color:#333; margin-bottom:12px; }
+    .rank-row { display:flex; align-items:center; font-size:13px; margin-bottom:8px; }
+    .rank-row .rk { width:18px; color:#aab; font-size:12px; }
+    .rank-row .nm { width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#444; }
+    .rank-row .bar { flex:1; height:8px; background:#eef; border-radius:4px; margin:0 8px; overflow:hidden; }
+    .rank-row .bar > i { display:block; height:100%; background:#667eea; border-radius:4px; }
+    .rank-row .ct { width:48px; text-align:right; color:#889; font-size:12px; }
+    .dev-bar { display:flex; height:14px; border-radius:7px; overflow:hidden; margin:6px 0 14px; background:#eee; }
+    .dev-bar > span { display:block; height:100%; }
+    .dev-legend { font-size:12px; color:#778; display:flex; gap:16px; }
 
     .footer { max-width:1200px; margin:20px auto 0; text-align:center; font-size:12px; color:#aaa; }
   </style>
@@ -61,48 +82,69 @@
     <div>
       <a href="https://iq-test.com.cn" target="_blank">← 返回首页</a>
       <span style="margin:0 8px;color:#ddd;">|</span>
-      <a href="#" onclick="location.reload();return false;" style="color:#667eea;">🔄 刷新</a>
+      <a href="#" onclick="loadData();return false;" style="color:#667eea;">🔄 刷新</a>
     </div>
   </div>
 
-  <div class="stats" id="statsRow"></div>
-
-  <!-- 每日答题趋势图 -->
-  <div class="chart-wrap">
-    <div class="chart-header">
-      <span class="title">📈 每日答题趋势</span>
-      <div class="chart-tabs">
-        <button class="tab-btn active" data-range="7" onclick="switchChart(7)">最近一周</button>
-        <button class="tab-btn" data-range="30" onclick="switchChart(30)">最近一个月</button>
-      </div>
+  <div class="range-bar">
+    <span class="rlbl">时间范围：</span>
+    <div class="chart-tabs" id="rangeTabs">
+      <button data-range="7" onclick="setRange(7)">近7天</button>
+      <button data-range="30" class="active" onclick="setRange(30)">近30天</button>
+      <button data-range="90" onclick="setRange(90)">近90天</button>
+      <button data-range="365" onclick="setRange(365)">近一年</button>
     </div>
+    <span class="auto-hint" id="autoHint"></span>
+  </div>
+
+  <!-- ===== 答题数据 ===== -->
+  <h2 class="section-title">📝 答题数据</h2>
+  <div class="stats" id="statsRow"><div class="stat-card"><div class="lbl">加载中…</div></div></div>
+  <div class="chart-wrap">
+    <div class="chart-header"><span class="title">每日答题趋势</span></div>
     <canvas id="dailyChart"></canvas>
   </div>
-
   <div class="table-wrap">
     <div style="padding:14px 16px;border-bottom:1px solid #eef;font-size:13px;color:#667;display:flex;justify-content:space-between;align-items:center;">
-      <span>📋 答题记录</span>
+      <span>📋 最近答题记录</span>
       <span id="countLabel" style="font-size:12px;"></span>
     </div>
     <div style="overflow-x:auto;">
       <table>
-        <thead>
-          <tr><th>时间</th><th>测试</th><th>分数</th><th>等级</th><th>IP</th><th>位置</th></tr>
-        </thead>
-        <tbody id="scoresBody">
-          <tr><td colspan="6" class="loading">加载中...</td></tr>
-        </tbody>
+        <thead><tr><th>时间</th><th>测试</th><th>分数</th><th>等级</th><th>位置</th></tr></thead>
+        <tbody id="scoresBody"><tr><td colspan="5" class="loading">加载中...</td></tr></tbody>
       </table>
     </div>
   </div>
 
-  <div class="footer">iq-test.com.cn · 数据仅供内部参考</div>
+  <!-- ===== 访问数据 ===== -->
+  <h2 class="section-title">👁️ 访问数据</h2>
+  <div class="stats" id="visitStatsRow"><div class="stat-card"><div class="lbl">加载中…</div></div></div>
+  <div class="chart-wrap">
+    <div class="chart-header">
+      <span class="title">每日访问趋势</span>
+      <div class="chart-legend">
+        <span><i style="background:#667eea;"></i>PV 浏览量</span>
+        <span><i style="background:#43a047;"></i>UV 访客数</span>
+      </div>
+    </div>
+    <canvas id="visitChart"></canvas>
+  </div>
+  <div class="two-col">
+    <div class="panel"><h3>🔗 流量来源</h3><div id="sourcePanel" style="color:#99a;font-size:13px;">加载中…</div></div>
+    <div class="panel"><h3>📄 热门页面</h3><div id="pagePanel" style="color:#99a;font-size:13px;">加载中…</div></div>
+    <div class="panel"><h3>📱 设备占比</h3><div id="devicePanel" style="color:#99a;font-size:13px;">加载中…</div></div>
+  </div>
+
+  <div class="footer">iq-test.com.cn · 数据仅供内部参考 · 访问统计不含爬虫与后台自身</div>
 </div>
 
 <script>
 var TOKEN = '';
-var CHART_RANGE = 7; // 当前图表显示范围：7天或30天
-var ALL_DAILY_STATS = []; // 全部每日数据
+var RANGE = 30;
+var ALL_DAILY_STATS = [];
+var ALL_VISIT_DAILY = [];
+var TEST_NAMES = { wais:'韦氏成人', wisc:'韦氏儿童', binet:'斯坦福-比奈', raven:'瑞文推理', 'raven-spm':'瑞文SPM' };
 
 function login() {
   TOKEN = document.getElementById('pwdInput').value.trim() || 'admin123';
@@ -111,82 +153,148 @@ function login() {
   loadData();
 }
 
+function setRange(n) {
+  RANGE = n;
+  document.querySelectorAll('#rangeTabs button').forEach(function(b){
+    b.classList.toggle('active', parseInt(b.getAttribute('data-range')) === n);
+  });
+  loadData();
+}
+
 function loadData() {
-  var body = document.getElementById('scoresBody');
-  var stats = document.getElementById('statsRow');
-  var countLabel = document.getElementById('countLabel');
+  var days = RANGE;
+  var hint = document.getElementById('autoHint');
+  if (hint) hint.textContent = days <= 30 ? '自动刷新：30秒' : '大范围查询：已暂停自动刷新';
 
-  fetch('/api/score?token=' + encodeURIComponent(TOKEN))
-    .then(function(r) {
-      if (r.status === 403) throw new Error('密码错误');
-      return r.json();
+  var scoreP = fetch('/api/score?token=' + encodeURIComponent(TOKEN) + '&days=' + days)
+    .then(function(r){ if (r.status === 403) throw new Error('密码错误'); return r.json(); });
+  var visitP = fetch('/api/visit?token=' + encodeURIComponent(TOKEN) + '&days=' + days)
+    .then(function(r){ if (r.status === 403) return { success:false }; return r.json(); })
+    .catch(function(){ return { success:false }; });
+
+  Promise.all([scoreP, visitP])
+    .then(function(res){
+      renderScore(res[0]);
+      renderVisit(res[1]);
     })
-    .then(function(data) {
-      if (!data.success) throw new Error(data.error || '加载失败');
-
-      // Stats
-      var s = data.stats;
-      stats.innerHTML =
-        '<div class="stat-card"><div class="lbl">今日答题</div><div class="num" style="color:#4caf50;">' + (s.today || 0) + '</div></div>' +
-        '<div class="stat-card"><div class="lbl">昨日答题</div><div class="num" style="color:#ff9800;">' + (s.yesterday || 0) + '</div></div>' +
-        '<div class="stat-card"><div class="lbl">总答题次数</div><div class="num">' + s.total + '</div></div>' +
-        '<div class="stat-card"><div class="lbl">平均分</div><div class="num">' + s.avgScore + '</div></div>' +
-        '<div class="stat-card"><div class="lbl">最高分</div><div class="num">' + s.maxScore + '</div></div>' +
-        '<div class="stat-card"><div class="lbl">最低分</div><div class="num">' + s.minScore + '</div></div>';
-
-      // By test
-      var TEST_NAMES = {
-        wais: '韦氏成人',
-        wisc: '韦氏儿童',
-        binet: '斯坦福-比奈',
-        raven: '瑞文推理',
-        'raven-spm': '瑞文SPM'
-      };
-      var testsHtml = '';
-      for (var t in data.byTest) {
-        var info = data.byTest[t];
-        var name = TEST_NAMES[t] || t;
-        testsHtml += '<div class="stat-card"><div class="lbl">' + name + '</div><div class="num" style="font-size:20px;">' + info.count + '次</div><div style="font-size:11px;color:#999;">均分' + Math.round(info.total/info.count) + '</div></div>';
-      }
-      stats.innerHTML += testsHtml;
-
-      // 保存每日数据并绘制图表
-      ALL_DAILY_STATS = data.dailyStats || [];
-      drawChart(CHART_RANGE);
-
-      // Table
-      countLabel.textContent = '共 ' + data.scores.length + ' 条';
-      if (data.scores.length === 0) {
-        body.innerHTML = '<tr><td colspan="6" class="loading">暂无数据</td></tr>';
-        return;
-      }
-
-      body.innerHTML = data.scores.map(function(r) {
-        var tagClass = 'tag-gray';
-        var score = r.score || 0;
-        if (score >= 130) tagClass = 'tag-green';
-        else if (score >= 110) tagClass = 'tag-blue';
-        else if (score >= 90) tagClass = 'tag-orange';
-
-        return '<tr>' +
-          '<td>' + fmtTime(r.timestamp) + '</td>' +
-          '<td><span class="tag ' + tagClass + '">' + (TEST_NAMES[r.test] || r.test || '') + '</span></td>' +
-          '<td style="font-weight:bold;">' + score + '</td>' +
-          '<td>' + (r.label || '') + '</td>' +
-          '<td style="font-size:12px;color:#888;font-family:monospace;">' + (r.ip || '') + '</td>' +
-          '<td style="font-size:12px;color:#888;">' + (r.location || '') + '</td>' +
-        '</tr>';
-      }).join('');
-    })
-    .catch(function(e) {
-      body.innerHTML = '<tr><td colspan="6" class="error">' + e.message + '</td></tr>';
+    .catch(function(e){
+      document.getElementById('scoresBody').innerHTML = '<tr><td colspan="5" class="error">' + e.message + '</td></tr>';
     });
 }
 
-// Auto-refresh every 30 seconds
-setInterval(loadData, 30000);
+function renderScore(data) {
+  var stats = document.getElementById('statsRow');
+  var body = document.getElementById('scoresBody');
+  var countLabel = document.getElementById('countLabel');
+  if (!data || !data.success) { stats.innerHTML = '<div class="stat-card"><div class="lbl">答题数据加载失败</div></div>'; return; }
 
-// 格式化时间为本地时间 (北京时区)
+  var s = data.stats;
+  var rangeTxt = RANGE >= 365 ? '近一年' : ('近' + RANGE + '天');
+  stats.innerHTML =
+    '<div class="stat-card"><div class="lbl">今日答题</div><div class="num" style="color:#4caf50;">' + (s.today||0) + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">昨日答题</div><div class="num" style="color:#ff9800;">' + (s.yesterday||0) + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">' + rangeTxt + '答题</div><div class="num">' + s.total + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">平均分</div><div class="num">' + s.avgScore + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">最高 / 最低</div><div class="num" style="font-size:20px;">' + s.maxScore + ' / ' + s.minScore + '</div></div>';
+
+  var testsHtml = '';
+  for (var t in data.byTest) {
+    var info = data.byTest[t];
+    var name = TEST_NAMES[t] || t;
+    testsHtml += '<div class="stat-card"><div class="lbl">' + name + '</div><div class="num" style="font-size:20px;">' + info.count + '次</div><div class="sub">均分' + Math.round(info.total/info.count) + '</div></div>';
+  }
+  stats.innerHTML += testsHtml;
+
+  ALL_DAILY_STATS = data.dailyStats || [];
+  drawChart(RANGE);
+
+  countLabel.textContent = '共 ' + data.scores.length + ' 条';
+  if (!data.scores || data.scores.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" class="loading">暂无数据</td></tr>';
+    return;
+  }
+  body.innerHTML = data.scores.map(function(r){
+    var tagClass = 'tag-gray', score = r.score || 0;
+    if (score >= 130) tagClass = 'tag-green';
+    else if (score >= 110) tagClass = 'tag-blue';
+    else if (score >= 90) tagClass = 'tag-orange';
+    return '<tr>' +
+      '<td>' + fmtTime(r.timestamp) + '</td>' +
+      '<td><span class="tag ' + tagClass + '">' + (TEST_NAMES[r.test] || r.test || '') + '</span></td>' +
+      '<td style="font-weight:bold;">' + score + '</td>' +
+      '<td>' + (r.label || '') + '</td>' +
+      '<td style="font-size:12px;color:#888;">' + (r.location || '') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderVisit(data) {
+  var stats = document.getElementById('visitStatsRow');
+  var srcPanel = document.getElementById('sourcePanel');
+  var pagePanel = document.getElementById('pagePanel');
+  var devPanel = document.getElementById('devicePanel');
+
+  if (!data || !data.success) {
+    stats.innerHTML = '<div class="stat-card"><div class="lbl">访问数据待采集</div><div class="sub">部署后开始统计</div></div>';
+    srcPanel.innerHTML = '<div style="color:#aab;">暂无数据</div>';
+    pagePanel.innerHTML = '<div style="color:#aab;">暂无数据</div>';
+    devPanel.innerHTML = '<div style="color:#aab;">暂无数据</div>';
+    ALL_VISIT_DAILY = [];
+    drawVisitChart();
+    return;
+  }
+
+  var rangeTxt = RANGE >= 365 ? '近一年' : ('近' + RANGE + '天');
+  stats.innerHTML =
+    '<div class="stat-card"><div class="lbl">今日 PV</div><div class="num" style="color:#667eea;">' + (data.today.pv||0) + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">今日 UV</div><div class="num" style="color:#43a047;">' + (data.today.uv||0) + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">昨日 PV</div><div class="num" style="color:#98a;">' + (data.yesterday.pv||0) + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">' + rangeTxt + 'PV</div><div class="num">' + data.summary.pv + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">' + rangeTxt + 'UV</div><div class="num">' + data.summary.uv + '</div></div>';
+
+  ALL_VISIT_DAILY = data.daily || [];
+  drawVisitChart();
+
+  // 来源
+  if (data.bySource && data.bySource.length) {
+    var maxS = data.bySource[0].count || 1;
+    srcPanel.innerHTML = data.bySource.map(function(x, i){
+      var w = Math.round(x.count / maxS * 100);
+      return '<div class="rank-row"><span class="rk">' + (i+1) + '</span><span class="nm" title="'+escAttr(x.name)+'">' + escHtml(getSourceLabel(x.name)) + '</span><span class="bar"><i style="width:' + w + '%"></i></span><span class="ct">' + x.count + '</span></div>';
+    }).join('');
+  } else { srcPanel.innerHTML = '<div style="color:#aab;">暂无数据</div>'; }
+
+  // 页面
+  if (data.byPage && data.byPage.length) {
+    var maxP = data.byPage[0].count || 1;
+    pagePanel.innerHTML = data.byPage.map(function(x, i){
+      var w = Math.round(x.count / maxP * 100);
+      return '<div class="rank-row"><span class="rk">' + (i+1) + '</span><span class="nm" title="'+escAttr(x.path)+'">' + escHtml(getPageLabel(x.path)) + '</span><span class="bar"><i style="width:' + w + '%"></i></span><span class="ct">' + x.count + '</span></div>';
+    }).join('');
+  } else { pagePanel.innerHTML = '<div style="color:#aab;">暂无数据</div>'; }
+
+  // 设备
+  var m = data.byDevice.mobile || 0, d = data.byDevice.desktop || 0, tot = m + d;
+  if (tot > 0) {
+    var mp = Math.round(m / tot * 100), dp = 100 - mp;
+    devPanel.innerHTML =
+      '<div class="dev-bar"><span style="width:'+mp+'%;background:#667eea;"></span><span style="width:'+dp+'%;background:#43a047;"></span></div>' +
+      '<div class="dev-legend"><span>📱 手机 ' + mp + '%（' + m + '）</span><span>💻 电脑 ' + dp + '%（' + d + '）</span></div>';
+  } else { devPanel.innerHTML = '<div style="color:#aab;">暂无数据</div>'; }
+}
+
+// Auto-refresh: 仅小范围（<=30天）每30秒刷新，大范围避免 KV 读放大
+setInterval(function(){ if (RANGE <= 30 && TOKEN) loadData(); }, 30000);
+
+function getSourceLabel(s) { return s; }
+function getPageLabel(p) {
+  if (p === '/' || p === '/index.html') return '首页';
+  var map = { '/raven.html':'瑞文页', '/raven/':'瑞文页', '/wais.html':'韦氏成人', '/wais/':'韦氏成人', '/wisc.html':'韦氏儿童', '/wisc/':'韦氏儿童', '/binet.html':'斯坦福-比奈', '/binet/':'斯坦福-比奈', '/test-raven-spm.html':'瑞文SPM测试', '/privacy.html':'隐私政策' };
+  if (map[p]) return map[p];
+  if (p.indexOf('/blog/') === 0) return '博客·' + p.replace('/blog/','').replace('.html','');
+  return p;
+}
+
 function fmtTime(ts) {
   if (!ts) return '-';
   var d = new Date(ts);
@@ -195,163 +303,126 @@ function fmtTime(ts) {
   var day = String(d.getDate()).padStart(2, '0');
   var h = String(d.getHours()).padStart(2, '0');
   var min = String(d.getMinutes()).padStart(2, '0');
-  var s = String(d.getSeconds()).padStart(2, '0');
-  return y + '/' + m + '/' + day + ' ' + h + ':' + min + ':' + s;
+  return y + '/' + m + '/' + day + ' ' + h + ':' + min;
 }
 
-// ---- 每日答题曲线图 ----
+function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function escAttr(s){ return escHtml(s); }
 
-function switchChart(days) {
-  CHART_RANGE = days;
-  // 更新按钮样式
-  document.querySelectorAll('.tab-btn').forEach(function(b) {
-    b.classList.toggle('active', parseInt(b.getAttribute('data-range')) === days);
-  });
-  drawChart(days);
-}
-
+// ---- 答题趋势图 ----
 function drawChart(days) {
   var canvas = document.getElementById('dailyChart');
-  if (!canvas || ALL_DAILY_STATS.length === 0) return;
-
+  if (!canvas) return;
   var ctx = canvas.getContext('2d');
   var rect = canvas.parentElement.getBoundingClientRect();
-  var W = Math.min(rect.width - 48, 1152);
+  var W = Math.min(rect.width - 44, 1152);
   var H = 220;
-  canvas.width = W * 2;
-  canvas.height = H * 2;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(2, 2);
+  canvas.width = W * 2; canvas.height = H * 2;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(1,0,0,1,0,0); ctx.scale(2,2); ctx.clearRect(0,0,W,H);
 
-  // 取最近 days 天的数据
   var list = ALL_DAILY_STATS.slice(-days);
-  if (list.length === 0) {
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#999';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('暂无数据', W / 2, H / 2);
-    return;
-  }
-
-  var PAD = { top: 20, right: 16, bottom: 36, left: 44 };
-  var chartW = W - PAD.left - PAD.right;
-  var chartH = H - PAD.top - PAD.bottom;
-
-  // 计算最大值（至少为 5，留 20% 余量）
-  var maxVal = 0;
-  for (var i = 0; i < list.length; i++) {
-    if (list[i].count > maxVal) maxVal = list[i].count;
-  }
-  maxVal = Math.max(maxVal, 5);
-  maxVal = Math.ceil(maxVal * 1.2);
-  if (maxVal < 5) maxVal = 5;
-
-  // 清空
-  ctx.clearRect(0, 0, W, H);
-
-  // ---- 网格线 ----
-  var gridLines = 4;
-  ctx.strokeStyle = '#f0f0f0';
-  ctx.lineWidth = 1;
-  for (var g = 0; g <= gridLines; g++) {
-    var gy = PAD.top + (chartH / gridLines) * g;
-    ctx.beginPath();
-    ctx.moveTo(PAD.left, gy);
-    ctx.lineTo(W - PAD.right, gy);
-    ctx.stroke();
-
-    // Y 轴标签
-    var val = maxVal - (maxVal / gridLines) * g;
-    ctx.fillStyle = '#999';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(Math.round(val), PAD.left - 6, gy);
-  }
-
-  // ---- 绘制折线 ----
-  var points = [];
-  var stepX = chartW / Math.max(list.length - 1, 1);
-  for (var i = 0; i < list.length; i++) {
-    var px = PAD.left + stepX * i;
-    var py = PAD.top + chartH - (list[i].count / maxVal) * chartH;
-    points.push({ x: px, y: py, date: list[i].date, count: list[i].count });
-  }
-
-  // 填充渐变区域
-  ctx.beginPath();
-  ctx.moveTo(points[0].x, PAD.top + chartH);
-  for (var i = 0; i < points.length; i++) {
-    ctx.lineTo(points[i].x, points[i].y);
-  }
-  ctx.lineTo(points[points.length - 1].x, PAD.top + chartH);
-  ctx.closePath();
-  var grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + chartH);
-  grad.addColorStop(0, 'rgba(102,126,234,0.25)');
-  grad.addColorStop(1, 'rgba(102,126,234,0.01)');
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // 折线
-  ctx.beginPath();
-  ctx.strokeStyle = '#667eea';
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  for (var i = 0; i < points.length; i++) {
-    if (i === 0) ctx.moveTo(points[i].x, points[i].y);
-    else ctx.lineTo(points[i].x, points[i].y);
-  }
-  ctx.stroke();
-
-  // 数据点圆点
-  for (var i = 0; i < points.length; i++) {
-    ctx.beginPath();
-    ctx.arc(points[i].x, points[i].y, 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#667eea';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
-
-  // ---- X 轴日期标签 ----
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.font = '11px sans-serif';
-  ctx.fillStyle = '#999';
-  var labelInterval = list.length > 14 ? Math.ceil(list.length / 7) : 1;
-  for (var i = 0; i < points.length; i++) {
-    if (i % labelInterval !== 0 && i !== points.length - 1) continue;
-    var dateStr = points[i].date;
-    var parts = dateStr.split('-');
-    var label = parts[1] + '/' + parts[2]; // MM/DD
-    ctx.fillText(label, points[i].x, PAD.top + chartH + 6);
-  }
-
-  // ---- 数据提示（悬停在最后一个点显示当前值） ----
-  // 直接在图表右上角显示最新值
-  var last = points[points.length - 1];
-  ctx.fillStyle = '#667eea';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  // 在右上角显示
-  ctx.fillText('今日: ' + last.count + ' 次', PAD.left, 2);
+  if (list.length === 0) { drawEmpty(ctx, W, H); return; }
+  drawSeries(ctx, W, H, list.map(function(x){return x.count;}), list.map(function(x){return x.date;}), '#667eea', 'rgba(102,126,234,0.25)', true);
 }
 
-// 窗口变化时重绘（防抖）
+// ---- 访问趋势图（PV 实线 + UV 虚线）----
+function drawVisitChart() {
+  var canvas = document.getElementById('visitChart');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var rect = canvas.parentElement.getBoundingClientRect();
+  var W = Math.min(rect.width - 44, 1152);
+  var H = 220;
+  canvas.width = W * 2; canvas.height = H * 2;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(1,0,0,1,0,0); ctx.scale(2,2); ctx.clearRect(0,0,W,H);
+
+  var list = ALL_VISIT_DAILY.slice(-RANGE);
+  if (list.length === 0) { drawEmpty(ctx, W, H); return; }
+  drawSeries(ctx, W, H, list.map(function(x){return x.pv;}), list.map(function(x){return x.date;}), '#667eea', 'rgba(102,126,234,0.22)', true, list.map(function(x){return x.uv;}));
+}
+
+function drawEmpty(ctx, W, H) {
+  ctx.fillStyle = '#bbb'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('暂无数据', W/2, H/2);
+}
+
+function drawSeries(ctx, W, H, vals, dates, color, fillColor, fill, uvVals) {
+  var PAD = { top: 20, right: 16, bottom: 34, left: 42 };
+  var chartW = W - PAD.left - PAD.right;
+  var chartH = H - PAD.top - PAD.bottom;
+  var maxVal = 0;
+  for (var i = 0; i < vals.length; i++) if (vals[i] > maxVal) maxVal = vals[i];
+  if (uvVals) for (var i = 0; i < uvVals.length; i++) if (uvVals[i] > maxVal) maxVal = uvVals[i];
+  maxVal = Math.max(maxVal, 5);
+  maxVal = Math.ceil(maxVal * 1.2);
+
+  var gridLines = 4;
+  ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
+  for (var g = 0; g <= gridLines; g++) {
+    var gy = PAD.top + (chartH / gridLines) * g;
+    ctx.beginPath(); ctx.moveTo(PAD.left, gy); ctx.lineTo(W - PAD.right, gy); ctx.stroke();
+    ctx.fillStyle = '#999'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(maxVal - (maxVal / gridLines) * g), PAD.left - 6, gy);
+  }
+
+  var n = vals.length;
+  var stepX = chartW / Math.max(n - 1, 1);
+  function pt(i, v) { return { x: PAD.left + stepX * i, y: PAD.top + chartH - (v / maxVal) * chartH }; }
+
+  if (fill) {
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, PAD.top + chartH);
+    for (var i = 0; i < n; i++) { var p = pt(i, vals[i]); ctx.lineTo(p.x, p.y); }
+    ctx.lineTo(PAD.left + stepX * (n - 1), PAD.top + chartH);
+    ctx.closePath();
+    var grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + chartH);
+    grad.addColorStop(0, fillColor); grad.addColorStop(1, 'rgba(102,126,234,0.01)');
+    ctx.fillStyle = grad; ctx.fill();
+  }
+
+  // PV 主线
+  ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  for (var i = 0; i < n; i++) { var p = pt(i, vals[i]); if (i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); }
+  ctx.stroke();
+  for (var i = 0; i < n; i++) { var p = pt(i, vals[i]); ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); }
+
+  // UV 虚线
+  if (uvVals) {
+    ctx.beginPath(); ctx.strokeStyle = '#43a047'; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
+    for (var i = 0; i < n; i++) { var p = pt(i, uvVals[i]); if (i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); }
+    ctx.stroke(); ctx.setLineDash([]);
+    for (var i = 0; i < n; i++) { var p = pt(i, uvVals[i]); ctx.beginPath(); ctx.arc(p.x,p.y,2.5,0,Math.PI*2); ctx.fillStyle = '#43a047'; ctx.fill(); }
+  }
+
+  // X 轴
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.font = '11px sans-serif'; ctx.fillStyle = '#999';
+  var labelInterval = n > 14 ? Math.ceil(n / 7) : 1;
+  for (var i = 0; i < n; i++) {
+    if (i % labelInterval !== 0 && i !== n - 1) continue;
+    var parts = dates[i].split('-');
+    ctx.fillText(parts[1] + '/' + parts[2], pt(i, vals[i]).x, PAD.top + chartH + 6);
+  }
+
+  // 最新值角标
+  ctx.fillStyle = color; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  var lastTxt = '最新: ' + vals[n-1];
+  if (uvVals) lastTxt += ' PV / ' + uvVals[n-1] + ' UV';
+  else lastTxt += ' 次';
+  ctx.fillText(lastTxt, PAD.left, 2);
+}
+
 var resizeTimer = null;
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function(){
   if (resizeTimer) clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(function() {
-    if (ALL_DAILY_STATS.length > 0) drawChart(CHART_RANGE);
+  resizeTimer = setTimeout(function(){
+    if (ALL_DAILY_STATS.length > 0) drawChart(RANGE);
+    if (ALL_VISIT_DAILY.length > 0 || document.getElementById('visitChart')) drawVisitChart();
   }, 300);
 });
 
-// Check URL for token
+// URL hash 自动登录
 var hash = window.location.hash;
 if (hash && hash.length > 1) {
   document.getElementById('pwdInput').value = hash.substring(1);

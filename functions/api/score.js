@@ -50,8 +50,8 @@ export async function onRequest(context) {
       const kvKey = 'scores:' + dateKey;
       const existing = await env.MESSAGES_KV.get(kvKey, 'json') || [];
       existing.push(record);
-      // 每天最多存 500 条，超出则覆盖最早的
-      if (existing.length > 500) existing.splice(0, existing.length - 500);
+      // 每天最多存 2000 条，超出则覆盖最早的（提高上限避免高峰丢数据）
+      if (existing.length > 2000) existing.splice(0, existing.length - 2000);
       await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing));
 
       return new Response(JSON.stringify({ success: true }), { headers });
@@ -70,11 +70,16 @@ export async function onRequest(context) {
     }
 
     try {
-      // 获取近 30 天的分数数据（使用中国日期）
+      // 支持 ?days=N 查询窗口（默认30，最大365）
+      let days = parseInt(url.searchParams.get('days'), 10);
+      if (!days || days < 1) days = 30;
+      if (days > 365) days = 365;
+
+      // 获取近 days 天的分数数据（使用中国日期）
       const allScores = [];
       const dailyStats = [];
       const todayChina = new Date(Date.now() + 8 * 60 * 60 * 1000); // 北京时间
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < days; i++) {
         var d = new Date(todayChina);
         d.setDate(d.getDate() - i);
         var y = d.getUTCFullYear();
