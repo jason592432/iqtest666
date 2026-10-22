@@ -21,7 +21,15 @@ export async function onRequest(context) {
   if (request.method === 'GET') {
     try {
       const data = await env.MESSAGES_KV.get('messages', 'json');
-      return new Response(JSON.stringify(data || []), { headers });
+      const list = Array.isArray(data) ? data : [];
+      // 用 timestamp 重算北京时间，自动修正历史留言因 UTC 时区导致的 8 小时偏差
+      const fixed = list.map(function(m) {
+        if (m && m.timestamp) {
+          return Object.assign({}, m, { time: formatChinaTime(m.timestamp) });
+        }
+        return m;
+      });
+      return new Response(JSON.stringify(fixed), { headers });
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), { status: 500, headers });
     }
@@ -43,7 +51,7 @@ export async function onRequest(context) {
       msgs.push({
         id: Date.now(),
         text: text,
-        time: new Date().toLocaleString('zh-CN'),
+        time: formatChinaTime(Date.now()),
         timestamp: Date.now()
       });
       // 最多保留200条
@@ -57,4 +65,19 @@ export async function onRequest(context) {
   }
 
   return new Response('Method not allowed', { status: 405, headers });
+}
+
+// ---- 中国时间工具函数 ----
+// Cloudflare Workers 运行在 UTC 时区。早期留言用 new Date().toLocaleString('zh-CN')
+// 生成 time，只做了格式本地化、时区仍按 UTC（比北京时间慢 8 小时）。
+// 这里统一用绝对时间戳 +8h 换算成北京时间，格式与前端显示一致（斜杠分隔）。
+function formatChinaTime(ts) {
+  var china = new Date((ts || Date.now()) + 8 * 60 * 60 * 1000);
+  var y = china.getUTCFullYear();
+  var m = String(china.getUTCMonth() + 1).padStart(2, '0');
+  var d = String(china.getUTCDate()).padStart(2, '0');
+  var h = String(china.getUTCHours()).padStart(2, '0');
+  var min = String(china.getUTCMinutes()).padStart(2, '0');
+  var s = String(china.getUTCSeconds()).padStart(2, '0');
+  return y + '/' + m + '/' + d + ' ' + h + ':' + min + ':' + s;
 }
