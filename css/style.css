@@ -1049,3 +1049,6 @@ body.in-test .seo-intro { display: none; }
 
 /* 结果页：评分口径说明 */
 .calib-note { font-size: 11.5px; color: #9aa0b4; line-height: 1.65; margin: 10px auto 0; max-width: 300px; }
+
+/* 结果页：超过了多少测试者 */
+.pct-line { font-size: 15px; font-weight: 600; color: #5b5bd6; margin: 12px auto 0; }

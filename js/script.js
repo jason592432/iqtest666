@@ -313,6 +313,14 @@ function submitQuiz() {
 // ============================================================
 const IQ_TABLE = [64,64,64,64,64,66,67,68,68,68,68,69,69,69,70,70,70,70,70,70,71,71,71,71,72,72,72,72,73,73,74,74,74,74,74,74,75,75,75,75,76,76,76,76,76,76,76,77,77,77,77,77,77,77,77,77,78,78,78,78,79,79,79,79,79,79,79,79,80,80,80,80,80,80,80,80,80,80,80,80,81,81,81,81,81,81,81,81,81,81,82,82,82,82,82,82,82,82,82,82,83,83,83,83,83,83,83,83,84,84,84,84,84,85,85,85,85,85,85,85,86,86,86,86,87,87,87,87,87,88,88,88,89,89,89,90,90,90,91,91,91,92,92,93,93,94,94,95,95,95,96,97,97,98,99,99,100,100,101,101,102,103,103,104,105,106,106,107,108,108,109,110,110,111,112,113,113,114,115,116,116,117,118,118,119,120,122,123,124,124,125,126,128,129,130,132,133,133,135,137,139];
 
+// 每个分数对应的百分位（超过了百分之多少的测试者），同样来自历史答卷分布
+const IQ_PCT = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.2,0.2,0.3,0.3,0.4,0.5,0.5,0.6,0.8,1.0,1.1,1.4,1.6,1.9,2.2,2.6,3.1,3.5,4.2,4.8,5.4,6.3,7.0,7.8,8.8,10.1,12.1,12.1,13.8,15.4,17.2,20.3,20.3,23.6,23.6,26.0,29.2,33.8,33.8,33.8,38.6,38.6,42.6,46.6,51.9,51.9,51.9,57.0,57.0,61.6,66.5,66.5,70.1,70.1,75.7,75.7,75.7,75.7,81.2,84.4,84.4,84.4,88.7,88.7,88.7,88.7,92.7,92.7,92.7,94.5,95.1,95.5,96.0,96.4,96.8,97.2,97.5,97.9,98.3,98.8,99.1,99.5,99.8,99.8,99.8];
+
+function iqPercentile(iq) {
+  const i = Math.max(0, Math.min(IQ_PCT.length - 1, Math.round(iq) - 55));
+  return IQ_PCT[i];
+}
+
 function pctToIq(pct) {
   const i = Math.round(Math.max(0, Math.min(1, pct)) * 200);
   return IQ_TABLE[i];
@@ -463,6 +471,14 @@ function showResult() {
     const offset = circumference - (result.fsiq / optRing) * circumference;
     if (els.iqRing) els.iqRing.style.strokeDashoffset = offset;
   }, 100);
+
+  var pctLine = document.getElementById('pctLine');
+  if (pctLine) {
+    var pctl = iqPercentile(result.fsiq);
+    pctLine.textContent = currentLangCode === 'en'
+      ? 'Higher than ' + pctl + '% of people who took this test here'
+      : '你超过了 ' + pctl + '% 的测试者';
+  }
 
   var calibNote = document.getElementById('calibNote');
   if (calibNote) {
@@ -823,6 +839,7 @@ function setupReminder(testKey) {
 
 // ---- i18n: language toggle buttons ----
 function initLangToggle() {
+  try { document.documentElement.lang = getCurrentLang(); } catch (e) {}
   var btns = document.querySelectorAll('.lang-btn');
   if (btns.length === 0) return;
   var current = getCurrentLang();
@@ -849,7 +866,6 @@ function renderSelector() {
     if (nameEl) nameEl.textContent = t(test + '.name');
     if (descEl) descEl.textContent = t(test + '.desc');
     if (metaEl) metaEl.innerHTML = t(test + '.meta');
-    card.setAttribute('aria-label', t(test + '.name'));
   });
   // Affiliate section
   const affiliateTitle = document.querySelector('.affiliate-section h4');

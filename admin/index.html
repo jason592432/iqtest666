@@ -137,6 +137,20 @@
     </div>
   </div>
 
+  <!-- 留言管理 -->
+  <div class="table-wrap" id="msgWrap" style="display:none;">
+    <div style="padding:14px 16px;border-bottom:1px solid #eef;font-size:13px;color:#667;display:flex;justify-content:space-between;align-items:center;">
+      <span>💬 留言管理</span>
+      <span style="font-size:12px;color:#aab;">点「删除」即时生效，前端刷新后消失</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th style="width:150px;">时间</th><th>内容</th><th style="width:70px;"></th></tr></thead>
+        <tbody id="msgBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- ===== 访问数据 ===== -->
   <h2 class="section-title">👁️ 访问数据</h2>
   <div class="stats" id="visitStatsRow"><div class="stat-card"><div class="lbl">加载中…</div></div></div>
@@ -240,6 +254,7 @@ function loadData() {
       renderScore(res[0]);
       renderQstats(res[0] && res[0].qstats);
       renderVisit(res[1]);
+      loadMessages();
     })
     .catch(function(e){
       document.getElementById('scoresBody').innerHTML = '<tr><td colspan="5" class="error">' + e.message + '</td></tr>';
@@ -292,6 +307,29 @@ function renderScore(data) {
       '<td style="font-size:12px;color:#888;">' + (r.location || '') + '</td>' +
     '</tr>';
   }).join('');
+}
+
+function loadMessages() {
+  var wrap = document.getElementById('msgWrap');
+  var body = document.getElementById('msgBody');
+  if (!wrap || !body || !TOKEN) return;
+  fetch('/api/messages').then(function (r) { return r.json(); }).then(function (list) {
+    if (!Array.isArray(list) || !list.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    body.innerHTML = list.slice().reverse().map(function (m) {
+      return '<tr><td style="color:#889;font-size:12px;">' + (m.time || '') + '</td>' +
+             '<td>' + String(m.text || '').replace(/[<>&]/g, function (c) { return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c]; }) + '</td>' +
+             '<td><button onclick="delMsg(' + m.id + ')" style="border:none;background:#fdeceb;color:#c33a2f;padding:4px 10px;border-radius:8px;font-size:12px;cursor:pointer;">删除</button></td></tr>';
+    }).join('');
+  }).catch(function () {});
+}
+
+function delMsg(id) {
+  if (!confirm('确定删除这条留言？')) return;
+  fetch('/api/messages?id=' + id, { method: 'DELETE', headers: authHeaders() })
+    .then(function (r) { if (!r.ok) throw new Error('删除失败'); return r.json(); })
+    .then(function () { loadMessages(); })
+    .catch(function (e) { alert(e.message); });
 }
 
 function renderQstats(qstats) {

@@ -5,6 +5,8 @@
 
 import { clientIp, rateLimit, jsonHeaders } from '../_lib/auth.js';
 
+import { isAdmin } from '../_lib/auth.js';
+
 export async function onRequest(context) {
   const { request, env } = context;
   const headers = jsonHeaders();
@@ -71,6 +73,25 @@ export async function onRequest(context) {
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), { status: 500, headers });
     }
+  }
+
+  // DELETE: 删除一条留言（需后台 token）
+  if (request.method === 'DELETE') {
+    const url = new URL(request.url);
+    if (!(await isAdmin(request, env, url))) {
+      return new Response(JSON.stringify({ error: '无权限' }), { status: 403, headers });
+    }
+    const id = url.searchParams.get('id');
+    if (!id) {
+      return new Response(JSON.stringify({ error: '缺少 id' }), { status: 400, headers });
+    }
+    const list = await env.MESSAGES_KV.get('messages', 'json') || [];
+    const next = list.filter(function (m) { return String(m.id) !== String(id); });
+    if (next.length === list.length) {
+      return new Response(JSON.stringify({ error: '没找到这条留言' }), { status: 404, headers });
+    }
+    await env.MESSAGES_KV.put('messages', JSON.stringify(next));
+    return new Response(JSON.stringify({ success: true, removed: list.length - next.length }), { headers });
   }
 
   return new Response('Method not allowed', { status: 405, headers });
