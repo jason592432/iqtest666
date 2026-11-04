@@ -688,6 +688,15 @@ function recordScore(result, test) {
       dur: testStartedAt ? Math.round((Date.now() - testStartedAt) / 1000) : 0,
       pct: result && typeof result.pct === 'number' ? +result.pct.toFixed(4) : 0,
       dimp: result && result.dimPct ? result.dimPct : null,
+      n: test && test.questions ? test.questions.length : 0,
+      wrong: (function () {
+        if (!test || !test.questions || !Array.isArray(answers)) return [];
+        var out = [];
+        for (var i = 0; i < test.questions.length; i++) {
+          if (answers[i] !== test.questions[i].correct) out.push(i);
+        }
+        return out;
+      })(),
       ver: 2,
       ref: (function () {
         try { return document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) { return ''; }
@@ -890,6 +899,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start quiz
   $('readyBtn').addEventListener('click', () => {
     testStartedAt = Date.now();
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/score', JSON.stringify({ event: 'start', test: currentTest.id }));
+      }
+    } catch (e) {}
     showPage('quiz');
     renderQuestion();
     startTimer();

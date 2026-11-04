@@ -76,7 +76,7 @@ body {
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  color: #777;
+  color: #5f6478;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
@@ -89,7 +89,7 @@ body {
 }
 .lang-selector .lang-btn.active {
   background: #fff;
-  color: #667eea;
+  color: #5b5bd6;
   font-weight: 600;
   box-shadow: 0 1px 4px rgba(0,0,0,0.1), 0 0 0 1px rgba(102,126,234,0.12);
 }
@@ -102,7 +102,7 @@ body {
 .selector-header { text-align: center; margin-bottom: 28px; }
 .selector-logo { font-size: 52px; margin-bottom: 8px; }
 .selector-header h1 { font-size: 26px; font-weight: 700; color: #1a1a2e; }
-.selector-subtitle { color: #888; font-size: 14px; margin-top: 6px; }
+.selector-subtitle { color: #5f6478; font-size: 14px; margin-top: 6px; }
 
 .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
@@ -133,7 +133,7 @@ body {
 }
 
 .test-icon { font-size: 32px; display: block; margin-bottom: 6px; }
-.test-card-content h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.test-card-content h2, .test-card-content h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
 .test-desc { font-size: 12px; line-height: 1.5; opacity: 0.85; margin-bottom: 8px; flex:1; }
 .test-meta { font-size: 12px; opacity: 0.7; display: flex; align-items: center; gap: 4px; }
 .test-badge-wip { font-size: 11px; color: #fbbf24; background: rgba(251,191,36,0.15); display: inline-block; padding: 2px 10px; border-radius: 10px; margin-top: 6px; font-weight: 500; letter-spacing: 0.3px; }
@@ -528,7 +528,7 @@ body {
   .test-card { min-height: 120px; }
   .test-card-content { padding: 14px; }
   .test-icon { font-size: 28px; margin-bottom: 4px; }
-  .test-card-content h3 { font-size: 15px; }
+  .test-card-content h2, .test-card-content h3 { font-size: 15px; }
   .test-desc { font-size: 12px; margin-bottom: 6px; }
   .test-meta { font-size: 11px; }
 
@@ -1036,8 +1036,8 @@ body {
 .seo-intro ul { margin: 10px 0 10px 22px; color: #4b5064; }
 .seo-intro li { margin: 6px 0; }
 .seo-intro strong { color: #1a1a2e; }
-.seo-intro a { color: #667eea; text-decoration: none; }
-.seo-links { margin-top: 20px; padding-top: 16px; border-top: 1px solid #eef0f8; font-size: 13.5px; color: #889; }
+.seo-intro a { color: #5457c9; text-decoration: none; }
+.seo-links { margin-top: 20px; padding-top: 16px; border-top: 1px solid #eef0f8; font-size: 13.5px; color: #5f6478; }
 .seo-links a { margin: 0 16px 0 6px; display: inline-block; }
 /* 进入答题/结果页时隐藏正文，避免干扰 */
 /* 进入答题/结果页时隐藏正文（由 script.js 切换 body.in-test） */

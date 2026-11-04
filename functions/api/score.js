@@ -26,6 +26,19 @@ export async function onRequest(context) {
       }
 
       const body = await request.json();
+
+      // 开始答题事件：单独计数，用来算完成率（完成数 / 开始数）
+      if (body.event === 'start') {
+        const t = TESTS.has(body.test) ? body.test : 'unknown';
+        const day = getChinaDate();
+        const key = 'starts:' + day;
+        const cur = (await env.MESSAGES_KV.get(key, 'json')) || { total: 0 };
+        cur.total = (cur.total || 0) + 1;
+        cur[t] = (cur[t] || 0) + 1;
+        await env.MESSAGES_KV.put(key, JSON.stringify(cur), { expirationTtl: 400 * 24 * 3600 });
+        return new Response(JSON.stringify({ success: true }), { headers });
+      }
+
       const test = TESTS.has(body.test) ? body.test : 'unknown';
       const score = Math.max(0, Math.min(160, parseInt(body.score, 10) || 0));
       const label = String(body.label || '').slice(0, 20);
@@ -73,6 +86,22 @@ export async function onRequest(context) {
       if (existing.length > 2000) existing.splice(0, existing.length - 2000);
       await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing), { expirationTtl: 400 * 24 * 3600 });
 
+      // 题目质量：累计每道题的答错次数，用来发现「答案可能是错的」或「太简单」的题
+      if (Array.isArray(body.wrong) && body.n > 0 && test !== 'unknown') {
+        try {
+          const qKey = 'qstat:' + test;
+          const qs = (await env.MESSAGES_KV.get(qKey, 'json')) || { n: 0, w: {} };
+          qs.n = (qs.n || 0) + 1;
+          qs.w = qs.w || {};
+          const n = Math.min(120, parseInt(body.n, 10) || 0);
+          for (const i of body.wrong.slice(0, n)) {
+            const idx = parseInt(i, 10);
+            if (idx >= 0 && idx < n) qs.w[idx] = (qs.w[idx] || 0) + 1;
+          }
+          await env.MESSAGES_KV.put(qKey, JSON.stringify(qs));
+        } catch (e) { /* 统计失败不影响主流程 */ }
+      }
+
       return new Response(JSON.stringify({ success: true }), { headers });
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), { status: 500, headers });
@@ -100,11 +129,18 @@ export async function onRequest(context) {
 
       // 并发读取，避免 365 天窗口串行 365 次 KV 读取导致超时
       const raw = await Promise.all(dateList.map(d => env.MESSAGES_KV.get('scores:' + d, 'json')));
+      const [startRaw, qstatRaw] = await Promise.all([
+        Promise.all(dateList.map(d => env.MESSAGES_KV.get('starts:' + d, 'json'))),
+        Promise.all([...TESTS].map(t => env.MESSAGES_KV.get('qstat:' + t, 'json')))
+      ]);
 
       const allScores = [];
       const dailyStats = [];
       const byDayCount = {};
+      let startTotal = 0;
       for (let i = 0; i < dateList.length; i++) {
+        const sd = startRaw[i];
+        startTotal += (sd && sd.total) ? sd.total : 0;
         const arr = Array.isArray(raw[i]) ? raw[i] : [];
         byDayCount[dateList[i]] = arr.length;
         dailyStats.push({ date: dateList[i], count: arr.length });
@@ -146,6 +182,8 @@ export async function onRequest(context) {
         minScore: min,
         avgDur: durN ? Math.round(durSum / durN) : 0,
         avgPct: pctN ? +(pctSum / pctN).toFixed(3) : 0,
+        starts: startTotal,
+        completion: startTotal ? Math.min(100, Math.round(allScores.length / startTotal * 1000) / 10) : 0,
       };
 
       const sourceList = Object.keys(bySource)
@@ -159,6 +197,7 @@ export async function onRequest(context) {
         byTest: byTest,
         bySource: sourceList,
         hist: hist,
+        qstats: buildQstats(qstatRaw),
         dailyStats: dailyStats,
         scores: allScores.slice(0, 200)
       }), { headers });
@@ -192,6 +231,16 @@ function getChinaDate() {
   var m = String(china.getUTCMonth() + 1).padStart(2, '0');
   var d = String(china.getUTCDate()).padStart(2, '0');
   return y + '-' + m + '-' + d;
+}
+
+function buildQstats(arr) {
+  const out = {};
+  const tests = [...TESTS];
+  for (let i = 0; i < tests.length; i++) {
+    const q = arr[i];
+    if (q && q.n) out[tests[i]] = { n: q.n, w: q.w || {} };
+  }
+  return out;
 }
 
 function addDays(dateStr, n) {

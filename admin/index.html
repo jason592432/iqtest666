@@ -123,6 +123,20 @@
     </div>
   </div>
 
+  <!-- 题目质量 -->
+  <div class="table-wrap" id="qstatWrap" style="display:none;">
+    <div style="padding:14px 16px;border-bottom:1px solid #eef;font-size:13px;color:#667;display:flex;justify-content:space-between;align-items:center;">
+      <span>🧪 题目质量（累计答错率最高的题）</span>
+      <span style="font-size:12px;color:#aab;">答错率 &gt; 70% 的题建议人工复核</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>测试</th><th>题号</th><th>答错率</th><th>样本</th></tr></thead>
+        <tbody id="qstatBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- ===== 访问数据 ===== -->
   <h2 class="section-title">👁️ 访问数据</h2>
   <div class="stats" id="visitStatsRow"><div class="stat-card"><div class="lbl">加载中…</div></div></div>
@@ -224,6 +238,7 @@ function loadData() {
   Promise.all([scoreP, visitP])
     .then(function(res){
       renderScore(res[0]);
+      renderQstats(res[0] && res[0].qstats);
       renderVisit(res[1]);
     })
     .catch(function(e){
@@ -245,7 +260,8 @@ function renderScore(data) {
     '<div class="stat-card"><div class="lbl">' + rangeTxt + '答题</div><div class="num">' + s.total + '</div></div>' +
     '<div class="stat-card"><div class="lbl">平均分</div><div class="num">' + s.avgScore + '</div></div>' +
     '<div class="stat-card"><div class="lbl">最高 / 最低</div><div class="num" style="font-size:20px;">' + s.maxScore + ' / ' + s.minScore + '</div></div>' +
-    (s.avgDur ? '<div class="stat-card"><div class="lbl">平均用时</div><div class="num" style="font-size:20px;">' + Math.floor(s.avgDur/60) + '分' + String(s.avgDur%60).padStart(2,'0') + '秒</div></div>' : '');
+    (s.avgDur ? '<div class="stat-card"><div class="lbl">平均用时</div><div class="num" style="font-size:20px;">' + Math.floor(s.avgDur/60) + '分' + String(s.avgDur%60).padStart(2,'0') + '秒</div></div>' : '') +
+    (s.completion ? '<div class="stat-card"><div class="lbl">完成率</div><div class="num" style="color:#4caf50;">' + s.completion + '%</div><div class="sub">答题 ' + s.total + ' / 开始 ' + s.starts + '</div></div>' : '');
 
   var testsHtml = '';
   for (var t in data.byTest) {
@@ -275,6 +291,32 @@ function renderScore(data) {
       '<td>' + (r.label || '') + '</td>' +
       '<td style="font-size:12px;color:#888;">' + (r.location || '') + '</td>' +
     '</tr>';
+  }).join('');
+}
+
+function renderQstats(qstats) {
+  var wrap = document.getElementById('qstatWrap');
+  var body = document.getElementById('qstatBody');
+  if (!wrap || !body) return;
+  if (!qstats) { wrap.style.display = 'none'; return; }
+  var rows = [];
+  Object.keys(qstats).forEach(function (t) {
+    var q = qstats[t] || {};
+    var n = q.n || 0;
+    if (!n) return;
+    Object.keys(q.w || {}).forEach(function (idx) {
+      var wrongN = q.w[idx];
+      rows.push({ test: TEST_NAMES[t] || t, idx: parseInt(idx, 10) + 1, rate: Math.round(wrongN / n * 100), n: n });
+    });
+  });
+  if (!rows.length) { wrap.style.display = 'none'; return; }
+  rows.sort(function (a, b) { return b.rate - a.rate; });
+  wrap.style.display = 'block';
+  body.innerHTML = rows.slice(0, 12).map(function (r) {
+    var color = r.rate >= 70 ? '#e53935' : (r.rate >= 50 ? '#fb8c00' : '#43a047');
+    return '<tr><td>' + r.test + '</td><td>第 ' + r.idx + ' 题</td>' +
+           '<td style="color:' + color + ';font-weight:600;">' + r.rate + '%</td>' +
+           '<td style="color:#99a;">' + r.n + ' 份</td></tr>';
   }).join('');
 }
 
