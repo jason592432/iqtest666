@@ -306,7 +306,7 @@ function submitQuiz() {
 //
 // 新算法：按本站历史答卷的经验分布取百分位，再用均值 110、标准差 15
 // 的正态分位换算 —— 110 分 = 中位数，130 分 ≈ 前 10%。
-// 全对（100%）单独处理：按用时在 138–150 之间给分，避免天花板堆积。
+// 全对（100%）单独处理：按用时在 136–148 之间给分，避免天花板堆积。
 //
 // 表由 15,187 份历史答卷离线拟合，pct 0%–100%、步长 0.5%。
 // 以后要调基准，重算这张表即可。
@@ -325,7 +325,7 @@ function calibrateFsiq(pct) {
       const used = (Date.now() - testStartedAt) / 1000;
       speed = Math.max(0, Math.min(1, (currentTest.timeLimit - used) / currentTest.timeLimit));
     }
-    return Math.round(138 + 12 * speed);
+    return Math.round(136 + 12 * speed);
   }
   return pctToIq(pct);
 }
