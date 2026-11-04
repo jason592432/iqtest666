@@ -4,3 +4,7 @@ node_modules/
 .netlify/
 .wrangler/
 wrangler.toml
+scripts/.baidu-token
+scripts/.baidu-pushed.txt
+scripts/.launchd.log
+scripts/.baidu-push.log
