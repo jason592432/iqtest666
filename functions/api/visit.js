@@ -1,16 +1,13 @@
 // Cloudflare Pages Function - 全站访问统计 API
 // POST: 记录一次页面访问（path / referrer / 国家 / 设备），IP 仅做哈希去重不存原值
-// GET:  查询访问统计（需 admin token），返回 PV / UV / 来源 / 热门页面 / 设备
+// GET:  查询访问统计（需后台 token），返回 PV / UV / 来源 / 热门页面 / 设备
 // 使用 KV namespace: MESSAGES_KV（与留言、分数共用）
+
+import { isAdmin, clientIp, rateLimit, jsonHeaders } from '../_lib/auth.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+  const headers = jsonHeaders();
 
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers });
@@ -30,7 +27,13 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ success: true, skipped: 'bot' }), { headers });
       }
 
-      const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+      const ip = clientIp(request);
+      // 单 IP 每小时最多 600 次浏览，防止刷量；超限静默丢弃
+      const limited = await rateLimit(env, 'visit:' + ip, 600, 60 * 60);
+      if (!limited.ok) {
+        return new Response(JSON.stringify({ success: true, skipped: 'rate' }), { headers });
+      }
+
       const ipHash = hashStr(ip);
       const country = (request.cf && request.cf.country) ? request.cf.country : '';
       const device = /mobile|android|iphone|ipad|ipod/i.test(ua) ? 'mobile' : 'desktop';
@@ -53,7 +56,7 @@ export async function onRequest(context) {
   // ========== GET: 查询统计 ==========
   if (request.method === 'GET') {
     const url = new URL(request.url);
-    if (url.searchParams.get('token') !== 'admin123') {
+    if (!(await isAdmin(request, env, url))) {
       return new Response(JSON.stringify({ error: '无权限' }), { status: 403, headers });
     }
     try {
@@ -61,20 +64,20 @@ export async function onRequest(context) {
       if (!days || days < 1) days = 30;
       if (days > 365) days = 365;
 
+      const today = getChinaDate();
+      const dateList = [];
+      for (let i = days - 1; i >= 0; i--) dateList.push(addDays(today, -i));
+
+      // 并发读取，避免大窗口串行 KV 读取
+      const raw = await Promise.all(dateList.map(d => env.MESSAGES_KV.get('visits:' + d, 'json')));
+
       const daily = [];
       const allRecords = [];
-      for (let i = days - 1; i >= 0; i--) {
-        const d = new Date(Date.now() + 8 * 3600 * 1000);
-        d.setUTCDate(d.getUTCDate() - i);
-        const y = d.getUTCFullYear();
-        const mo = String(d.getUTCMonth() + 1).padStart(2, '0');
-        const da = String(d.getUTCDate()).padStart(2, '0');
-        const dateStr = y + '-' + mo + '-' + da;
-        let arr = await env.MESSAGES_KV.get('visits:' + dateStr, 'json');
-        arr = Array.isArray(arr) ? arr : [];
+      for (let i = 0; i < dateList.length; i++) {
+        const arr = Array.isArray(raw[i]) ? raw[i] : [];
         const uvSet = {};
         for (let k = 0; k < arr.length; k++) { if (arr[k].h) uvSet[arr[k].h] = 1; }
-        daily.push({ date: dateStr, pv: arr.length, uv: Object.keys(uvSet).length });
+        daily.push({ date: dateList[i], pv: arr.length, uv: Object.keys(uvSet).length });
         for (let k = 0; k < arr.length; k++) allRecords.push(arr[k]);
       }
 
@@ -94,7 +97,7 @@ export async function onRequest(context) {
       }
       const totalUv = Object.keys(uvAll).length;
 
-      const today = daily[daily.length - 1] || { date: '', pv: 0, uv: 0 };
+      const todayStat = daily[daily.length - 1] || { date: '', pv: 0, uv: 0 };
       const yesterday = daily[daily.length - 2] || { date: '', pv: 0, uv: 0 };
 
       const bySource = Object.keys(srcMap)
@@ -109,7 +112,7 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({
         success: true,
         days: days,
-        today: today,
+        today: todayStat,
         yesterday: yesterday,
         summary: { pv: totalPv, uv: totalUv },
         daily: daily,
@@ -133,6 +136,16 @@ function getChinaDate() {
   const m = String(d.getUTCMonth() + 1).padStart(2, '0');
   const da = String(d.getUTCDate()).padStart(2, '0');
   return y + '-' + m + '-' + da;
+}
+
+function addDays(dateStr, n) {
+  const parts = dateStr.split('-');
+  const d = new Date(Date.UTC(+parts[0], +parts[1] - 1, +parts[2]));
+  d.setUTCDate(d.getUTCDate() + n);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return y + '-' + m + '-' + dd;
 }
 
 // 解析来源域名 → 友好名称

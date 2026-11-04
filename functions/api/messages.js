@@ -3,14 +3,11 @@
 // 在 Cloudflare Dashboard → Workers & Pages → 你的项目 → Settings → Functions → KV namespace bindings
 // Variable name: MESSAGES_KV, 创建一个 KV namespace (如: iq-messages)
 
+import { clientIp, rateLimit, jsonHeaders } from '../_lib/auth.js';
+
 export async function onRequest(context) {
   const { request, env } = context;
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+  const headers = jsonHeaders();
 
   // CORS preflight
   if (request.method === 'OPTIONS') {
@@ -38,13 +35,25 @@ export async function onRequest(context) {
   // POST: 添加留言
   if (request.method === 'POST') {
     try {
+      const ip = clientIp(request);
+      // 同一 IP 10 分钟内最多 5 条留言，挡掉批量灌水
+      const limited = await rateLimit(env, 'msg:' + ip, 5, 10 * 60);
+      if (!limited.ok) {
+        return new Response(JSON.stringify({ error: '发送太频繁，请稍后再试' }), { status: 429, headers });
+      }
+
       const body = await request.json();
-      const text = (body.text || '').trim();
+      // 去掉控制字符，保留中文与常规标点
+      const text = String(body.text || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
       if (!text) {
         return new Response(JSON.stringify({ error: '留言不能为空' }), { status: 400, headers });
       }
       if (text.length > 500) {
         return new Response(JSON.stringify({ error: '留言太长，最多500字' }), { status: 400, headers });
+      }
+      // 简单的链接刷屏拦截
+      if ((text.match(/https?:\/\//g) || []).length > 2) {
+        return new Response(JSON.stringify({ error: '请勿发布大量链接' }), { status: 400, headers });
       }
 
       const msgs = await env.MESSAGES_KV.get('messages', 'json') || [];

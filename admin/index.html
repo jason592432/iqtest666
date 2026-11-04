@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
   <title>IQ测试 · 数据看板</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -71,8 +73,10 @@
 <div id="login">
   <div class="login-box">
     <h2>🔐 数据看板</h2>
-    <input type="password" id="pwdInput" placeholder="输入管理密码" onkeydown="if(event.key==='Enter')login()">
-    <button onclick="login()">进入</button>
+    <input type="password" id="pwdInput" placeholder="输入管理密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    <button id="loginBtn" onclick="login()">进入</button>
+    <p id="loginErr" style="color:#e53935;font-size:13px;margin-top:10px;min-height:18px;"></p>
+    <p style="color:#aab;font-size:11.5px;margin-top:6px;">登录状态保持 12 小时，请勿在公共设备上使用</p>
   </div>
 </div>
 
@@ -83,6 +87,8 @@
       <a href="https://iq-test.com.cn" target="_blank">← 返回首页</a>
       <span style="margin:0 8px;color:#ddd;">|</span>
       <a href="#" onclick="loadData();return false;" style="color:#667eea;">🔄 刷新</a>
+      <span style="margin:0 8px;color:#ddd;">|</span>
+      <a href="#" onclick="logout();return false;" style="color:#99a;">退出</a>
     </div>
   </div>
 
@@ -140,17 +146,60 @@
 </div>
 
 <script>
-var TOKEN = '';
+var TOKEN = sessionStorage.getItem('iq_admin_token') || '';
 var RANGE = 30;
 var ALL_DAILY_STATS = [];
 var ALL_VISIT_DAILY = [];
 var TEST_NAMES = { wais:'韦氏成人', wisc:'韦氏儿童', binet:'斯坦福-比奈', raven:'瑞文推理', 'raven-spm':'瑞文SPM' };
 
-function login() {
-  TOKEN = document.getElementById('pwdInput').value.trim() || 'admin123';
+function authHeaders() {
+  return TOKEN ? { 'Authorization': 'Bearer ' + TOKEN } : {};
+}
+
+function showDash() {
   document.getElementById('login').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  loadData();
+}
+
+function showLogin(msg) {
+  TOKEN = '';
+  sessionStorage.removeItem('iq_admin_token');
+  sessionStorage.removeItem('iq_admin_exp');
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login').style.display = 'block';
+  var err = document.getElementById('loginErr');
+  if (err) err.textContent = msg || '';
+}
+
+function logout() { showLogin(''); document.getElementById('pwdInput').value = ''; }
+
+function login(pwd) {
+  var input = document.getElementById('pwdInput');
+  var p = (pwd !== undefined ? pwd : input.value).trim();
+  var btn = document.getElementById('loginBtn');
+  var err = document.getElementById('loginErr');
+  if (!p) { if (err) err.textContent = '请输入密码'; return; }
+  if (err) err.textContent = '';
+  if (btn) { btn.disabled = true; btn.textContent = '验证中…'; }
+  fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: p })
+  }).then(function (r) {
+    return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+  }).then(function (res) {
+    if (!res.ok) throw new Error(res.d.error || '登录失败');
+    TOKEN = res.d.token;
+    sessionStorage.setItem('iq_admin_token', TOKEN);
+    sessionStorage.setItem('iq_admin_exp', String(Date.now() + (res.d.expiresIn || 43200) * 1000));
+    input.value = '';
+    showDash();
+    loadData();
+  }).catch(function (e) {
+    if (err) err.textContent = e.message;
+  }).finally(function () {
+    if (btn) { btn.disabled = false; btn.textContent = '进入'; }
+  });
 }
 
 function setRange(n) {
@@ -166,9 +215,9 @@ function loadData() {
   var hint = document.getElementById('autoHint');
   if (hint) hint.textContent = days <= 30 ? '自动刷新：30秒' : '大范围查询：已暂停自动刷新';
 
-  var scoreP = fetch('/api/score?token=' + encodeURIComponent(TOKEN) + '&days=' + days)
-    .then(function(r){ if (r.status === 403) throw new Error('密码错误'); return r.json(); });
-  var visitP = fetch('/api/visit?token=' + encodeURIComponent(TOKEN) + '&days=' + days)
+  var scoreP = fetch('/api/score?days=' + days, { headers: authHeaders() })
+    .then(function(r){ if (r.status === 403) { showLogin('登录已过期，请重新输入密码'); throw new Error('登录已过期，请重新登录'); } return r.json(); });
+  var visitP = fetch('/api/visit?days=' + days, { headers: authHeaders() })
     .then(function(r){ if (r.status === 403) return { success:false }; return r.json(); })
     .catch(function(){ return { success:false }; });
 
@@ -195,7 +244,8 @@ function renderScore(data) {
     '<div class="stat-card"><div class="lbl">昨日答题</div><div class="num" style="color:#ff9800;">' + (s.yesterday||0) + '</div></div>' +
     '<div class="stat-card"><div class="lbl">' + rangeTxt + '答题</div><div class="num">' + s.total + '</div></div>' +
     '<div class="stat-card"><div class="lbl">平均分</div><div class="num">' + s.avgScore + '</div></div>' +
-    '<div class="stat-card"><div class="lbl">最高 / 最低</div><div class="num" style="font-size:20px;">' + s.maxScore + ' / ' + s.minScore + '</div></div>';
+    '<div class="stat-card"><div class="lbl">最高 / 最低</div><div class="num" style="font-size:20px;">' + s.maxScore + ' / ' + s.minScore + '</div></div>' +
+    (s.avgDur ? '<div class="stat-card"><div class="lbl">平均用时</div><div class="num" style="font-size:20px;">' + Math.floor(s.avgDur/60) + '分' + String(s.avgDur%60).padStart(2,'0') + '秒</div></div>' : '');
 
   var testsHtml = '';
   for (var t in data.byTest) {
@@ -422,12 +472,24 @@ window.addEventListener('resize', function(){
   }, 300);
 });
 
-// URL hash 自动登录
-var hash = window.location.hash;
-if (hash && hash.length > 1) {
-  document.getElementById('pwdInput').value = hash.substring(1);
-  login();
-}
+// 启动逻辑：有效 token 直接进；URL hash 里的密码只用于一次登录，随后从地址栏抹掉
+(function boot() {
+  var hash = window.location.hash;
+  if (hash && hash.length > 1) {
+    var pwd = decodeURIComponent(hash.substring(1));
+    // 立即清掉地址栏与历史记录中的密码
+    try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+    login(pwd);
+    return;
+  }
+  var exp = parseInt(sessionStorage.getItem('iq_admin_exp') || '0', 10);
+  if (TOKEN && exp > Date.now()) {
+    showDash();
+    loadData();
+  } else {
+    showLogin('');
+  }
+})();
 </script>
 </body>
 </html>

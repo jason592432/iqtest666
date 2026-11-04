@@ -59,6 +59,7 @@ let timeLeft = 0;
 let timerInterval = null;
 let isSubmitted = false;
 let autoJumpTimer = null;
+let testStartedAt = 0;   // 开始答题的毫秒时间戳，用于统计平均用时
 
 // ---- i18n helpers for questions ----
 function qText(q) {
@@ -156,6 +157,7 @@ function initQuiz(testKey) {
   currentIndex = 0;
   timeLeft = testData.timeLimit || 1500;
   isSubmitted = false;
+  testStartedAt = 0;
   stopTimer();
   if (autoJumpTimer) { clearTimeout(autoJumpTimer); autoJumpTimer = null; }
 }
@@ -594,7 +596,11 @@ function recordScore(result, test) {
     var data = {
       test: test ? test.id : 'unknown',
       score: result ? result.fsiq || 0 : 0,
-      label: document.getElementById('iqLabel') ? document.getElementById('iqLabel').textContent : ''
+      label: document.getElementById('iqLabel') ? document.getElementById('iqLabel').textContent : '',
+      dur: testStartedAt ? Math.round((Date.now() - testStartedAt) / 1000) : 0,
+      ref: (function () {
+        try { return document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) { return ''; }
+      })()
     };
     // 使用 sendBeacon 或 fetch 异步发送，不影响用户体验
     if (navigator.sendBeacon) {
@@ -792,6 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Start quiz
   $('readyBtn').addEventListener('click', () => {
+    testStartedAt = Date.now();
     showPage('quiz');
     renderQuestion();
     startTimer();
