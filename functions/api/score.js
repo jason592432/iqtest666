@@ -51,6 +51,16 @@ export async function onRequest(context) {
       // 原始正确率 + 评分版本：以后调整评分曲线时，可以按版本区分，不用反推
       const pct = Number(body.pct);
       if (pct > 0 && pct <= 1) record.pct = Math.round(pct * 10000) / 10000;
+      if (body.dimp && typeof body.dimp === 'object') {
+        const keys = Object.keys(body.dimp).slice(0, 8);
+        const dimp = {};
+        for (const k of keys) {
+          if (!/^[A-Za-z]{2,6}$/.test(k)) continue;
+          const v = Number(body.dimp[k]);
+          if (v >= 0 && v <= 1) dimp[k] = Math.round(v * 1000) / 1000;
+        }
+        if (Object.keys(dimp).length) record.dimp = dimp;
+      }
       const ver = parseInt(body.ver, 10);
       if (ver > 0 && ver < 100) record.ver = ver;
 
@@ -61,7 +71,7 @@ export async function onRequest(context) {
       existing.push(record);
       // 每天最多存 2000 条，超出则覆盖最早的
       if (existing.length > 2000) existing.splice(0, existing.length - 2000);
-      await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing));
+      await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing), { expirationTtl: 400 * 24 * 3600 });
 
       return new Response(JSON.stringify({ success: true }), { headers });
     } catch (e) {

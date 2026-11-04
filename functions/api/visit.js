@@ -58,7 +58,7 @@ export async function onRequest(context) {
       existing.push(record);
       // 每天最多 3000 条，超出则丢弃最早的
       if (existing.length > 3000) existing.splice(0, existing.length - 3000);
-      await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing));
+      await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing), { expirationTtl: 400 * 24 * 3600 });
 
       return new Response(JSON.stringify({ success: true }), {
         headers: jsonHeaders({
@@ -102,14 +102,19 @@ export async function onRequest(context) {
       const totalPv = allRecords.length;
       const uvAll = {};
       let newVisits = 0, returnVisits = 0, vidVisits = 0;
+      const newSet = {}, retSet = {};
+      const todayStart = startOfChinaDay(Date.now());
       const srcMap = {}, pageMap = {};
       const devMap = { mobile: 0, desktop: 0 };
       for (let k = 0; k < allRecords.length; k++) {
         const r = allRecords[k];
         const key = r.v || r.h;
         if (key) uvAll[key] = 1;
-        if (r.v) { vidVisits++; newVisits += r.n ? 1 : 0; }
-        if (r.v && !r.n) returnVisits++;
+        if (r.v) {
+          vidVisits++;
+          const created = vidCreatedAt(r.v);
+          if (created >= todayStart) newSet[r.v] = 1; else retSet[r.v] = 1;
+        }
         const sname = parseSource(r.r);
         srcMap[sname] = (srcMap[sname] || 0) + 1;
         const pg = r.p || '/';
@@ -117,6 +122,8 @@ export async function onRequest(context) {
         if (r.d === 'mobile') devMap.mobile++; else devMap.desktop++;
       }
       const totalUv = Object.keys(uvAll).length;
+      newVisits = Object.keys(newSet).length;
+      returnVisits = Object.keys(retSet).length;
 
       const todayStat = daily[daily.length - 1] || { date: '', pv: 0, uv: 0 };
       const yesterday = daily[daily.length - 2] || { date: '', pv: 0, uv: 0 };

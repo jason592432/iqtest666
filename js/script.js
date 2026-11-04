@@ -298,6 +298,81 @@ function submitQuiz() {
   showResult();
 }
 
+// ============================================================
+// 评分校准 v2（2026-11-04）
+// ------------------------------------------------------------
+// 旧算法：FSIQ = 60 + 正确率 × 80（线性）。真实答卷的正确率分布很窄
+// （中位数 86%），线性换算会把 45% 的人推到 130 分以上。
+//
+// 新算法：按本站历史答卷的经验分布取百分位，再用均值 100、标准差 15
+// 的正态分位换算 —— 100 分 = 中位数，130 分 ≈ 前 2–3%。
+// 全对（100%）单独处理：按用时在 128–145 之间给分，避免天花板堆积。
+//
+// 表由 15,187 份历史答卷离线拟合，pct 0%–100%、步长 0.5%。
+// 以后要调基准，重算这张表即可。
+// ============================================================
+const IQ_TABLE = [55,55,55,55,55,56,57,58,58,58,58,59,59,59,60,60,60,60,60,60,61,61,61,61,62,62,62,62,63,63,64,64,64,64,64,64,65,65,65,65,66,66,66,66,66,66,66,67,67,67,67,67,67,67,67,67,68,68,68,68,69,69,69,69,69,69,69,69,70,70,70,70,70,70,70,70,70,70,70,70,71,71,71,71,71,71,71,71,71,71,72,72,72,72,72,72,72,72,72,72,73,73,73,73,73,73,73,73,74,74,74,74,74,75,75,75,75,75,75,75,76,76,76,76,77,77,77,77,77,78,78,78,79,79,79,80,80,80,81,81,81,82,82,83,83,84,84,85,85,85,86,87,87,88,89,89,90,90,91,91,92,93,93,94,95,96,96,97,98,98,99,100,100,101,102,103,103,104,105,106,106,107,108,108,109,110,112,113,114,114,115,116,118,119,120,122,123,123,125,127,129];
+
+function pctToIq(pct) {
+  const i = Math.round(Math.max(0, Math.min(1, pct)) * 200);
+  return IQ_TABLE[i];
+}
+
+function calibrateFsiq(pct) {
+  if (pct >= 0.9999) {
+    let speed = 0.5;
+    if (testStartedAt && currentTest && currentTest.timeLimit) {
+      const used = (Date.now() - testStartedAt) / 1000;
+      speed = Math.max(0, Math.min(1, (currentTest.timeLimit - used) / currentTest.timeLimit));
+    }
+    return Math.round(128 + 17 * speed);
+  }
+  return pctToIq(pct);
+}
+
+
+// ---- 维度分（二项分布换算）----
+// 维度题量少（7–8 题），直接套总分的分位表会把「8 题全对」推到 129 分。
+// 这里按二项分布 B(n, p̄) 估分位，p̄ 是全站平均单题正确率。
+const CAL_P = 0.831;
+
+function normInv(p) {
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
+             1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
+             6.680131188771972e+01, -1.328068155288572e+01];
+  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
+             -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00,
+             3.754408661907416e+00];
+  const pl = 0.02425;
+  if (p < pl) {
+    const q = Math.sqrt(-2 * Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+  if (p > 1 - pl) {
+    const q = Math.sqrt(-2 * Math.log(1 - p));
+    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+  const q = p - 0.5, r = q * q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5]) * q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+
+function binomPmf(k, n, p) {
+  let c = 1;
+  for (let j = 1; j <= k; j++) c = c * (n - j + 1) / j;
+  return c * Math.pow(p, k) * Math.pow(1 - p, n - k);
+}
+
+function dimIq(pct, n) {
+  n = Math.max(4, Math.round(n) || 8);
+  const k = Math.round(Math.max(0, Math.min(1, pct)) * n);
+  let cdf = 0;
+  for (let i = 0; i <= k; i++) cdf += binomPmf(i, n, CAL_P);
+  const q = Math.max(0.003, Math.min(0.997, cdf - 0.5 * binomPmf(k, n, CAL_P)));
+  return Math.round(Math.max(55, Math.min(145, 100 + 15 * normInv(q))));
+}
+
 // ---- Scoring ----
 function calcScore() {
   if (!currentTest) return null;
@@ -318,6 +393,7 @@ function calcScore() {
     const pts = q.points || 1;
     if (q.type && domains[q.type]) {
       domains[q.type].max += pts;
+      domains[q.type].n = (domains[q.type].n || 0) + 1;
     }
 
     if (answers[i] === -1) { unanswered++; return; }
@@ -332,19 +408,22 @@ function calcScore() {
     }
   });
 
-  // FSIQ: 0%→60, 50%→100, 100%→140
-  const fsiq = Math.min(Math.max(Math.round(60 + (totalRaw / maxRaw) * 80), 40), 150);
+  // FSIQ：按经验分布换算（见文件顶部的评分校准说明）
+  const pct = maxRaw > 0 ? totalRaw / maxRaw : 0;
+  const fsiq = calibrateFsiq(pct);
 
   // Index scores
   const indexScores = {};
+  const dimPct = {};
   if (currentTest.indexConfig) {
     for (const [key, data] of Object.entries(domains)) {
       const pct = data.max > 0 ? data.raw / data.max : 0;
-      indexScores[key] = Math.min(Math.max(Math.round(60 + pct * 80), 40), 150);
+      indexScores[key] = dimIq(pct, data.n);
+      dimPct[key] = Math.round(pct * 1000) / 1000;
     }
   }
 
-  return { totalRaw, maxRaw, correctCount, unanswered, total: currentTest.questions.length, fsiq, indexScores, domains, _rawAnswers: answers };
+  return { totalRaw, maxRaw, pct, dimPct, correctCount, unanswered, total: currentTest.questions.length, fsiq, indexScores, domains, _rawAnswers: answers };
 }
 
 // ---- Results ----
@@ -384,6 +463,13 @@ function showResult() {
     const offset = circumference - (result.fsiq / optRing) * circumference;
     if (els.iqRing) els.iqRing.style.strokeDashoffset = offset;
   }, 100);
+
+  var calibNote = document.getElementById('calibNote');
+  if (calibNote) {
+    calibNote.textContent = currentLangCode === 'en'
+      ? 'Normalized against 15,000+ results on this site; 100 = median. Not directly comparable with scores before Nov 2026.'
+      : '分数按本站 1.5 万份答卷的分布换算，100 分 = 中位数。与 2026 年 11 月之前的历史分数不可直接比较。';
+  }
 
   animateNumber(els.iqScore, result.fsiq);
   const labelFn = currentLangCode === 'zh-CN' ? (currentTest.getLabel || defaultGetLabel) : (currentTest.getLabelEn || currentTest.getLabel || defaultGetLabel);
@@ -600,6 +686,9 @@ function recordScore(result, test) {
       score: result ? result.fsiq || 0 : 0,
       label: document.getElementById('iqLabel') ? document.getElementById('iqLabel').textContent : '',
       dur: testStartedAt ? Math.round((Date.now() - testStartedAt) / 1000) : 0,
+      pct: result && typeof result.pct === 'number' ? +result.pct.toFixed(4) : 0,
+      dimp: result && result.dimPct ? result.dimPct : null,
+      ver: 2,
       ref: (function () {
         try { return document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) { return ''; }
       })()

@@ -295,12 +295,18 @@ function renderVisit(data) {
   }
 
   var rangeTxt = RANGE >= 365 ? '近一年' : ('近' + RANGE + '天');
+  var sm = data.summary || {};
+  var retRate = (sm.returnVisits || 0) + (sm.newVisits || 0) > 0
+    ? Math.round((sm.returnVisits || 0) / ((sm.returnVisits || 0) + (sm.newVisits || 0)) * 100) : 0;
   stats.innerHTML =
     '<div class="stat-card"><div class="lbl">今日 PV</div><div class="num" style="color:#667eea;">' + (data.today.pv||0) + '</div></div>' +
     '<div class="stat-card"><div class="lbl">今日 UV</div><div class="num" style="color:#43a047;">' + (data.today.uv||0) + '</div></div>' +
     '<div class="stat-card"><div class="lbl">昨日 PV</div><div class="num" style="color:#98a;">' + (data.yesterday.pv||0) + '</div></div>' +
-    '<div class="stat-card"><div class="lbl">' + rangeTxt + 'PV</div><div class="num">' + data.summary.pv + '</div></div>' +
-    '<div class="stat-card"><div class="lbl">' + rangeTxt + 'UV</div><div class="num">' + data.summary.uv + '</div></div>';
+    '<div class="stat-card"><div class="lbl">' + rangeTxt + 'PV</div><div class="num">' + (sm.pv||0) + '</div></div>' +
+    '<div class="stat-card"><div class="lbl">' + rangeTxt + 'UV</div><div class="num">' + (sm.uv||0) + '</div><div class="sub">按访客 cookie 去重</div></div>' +
+    (sm.vidCoverage !== undefined
+      ? '<div class="stat-card"><div class="lbl">回访占比</div><div class="num" style="font-size:22px;">' + retRate + '%</div><div class="sub">老访客 ' + (sm.returnVisits||0) + ' / 新访客 ' + (sm.newVisits||0) + '</div></div>'
+      : '');
 
   ALL_VISIT_DAILY = data.daily || [];
   drawVisitChart();
