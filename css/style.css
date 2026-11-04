@@ -1022,3 +1022,27 @@ body {
   font-size: 13px;
   padding: 40px 16px;
 }
+
+/* ---- SEO 正文区块（百度/必应可抓取）---- */
+.seo-intro { width: 100%; max-width: 680px; margin: 18px auto 0; }
+.seo-intro .seo-card {
+  background: #fff; border-radius: 20px; padding: 30px 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3); color: #333;
+  font-size: 14.5px; line-height: 1.9;
+}
+.seo-intro h2 { font-size: 18px; color: #1a1a2e; margin: 26px 0 8px; line-height: 1.45; }
+.seo-intro h2:first-child { margin-top: 0; }
+.seo-intro p { margin: 10px 0; color: #4b5064; }
+.seo-intro ul { margin: 10px 0 10px 22px; color: #4b5064; }
+.seo-intro li { margin: 6px 0; }
+.seo-intro strong { color: #1a1a2e; }
+.seo-intro a { color: #667eea; text-decoration: none; }
+.seo-links { margin-top: 20px; padding-top: 16px; border-top: 1px solid #eef0f8; font-size: 13.5px; color: #889; }
+.seo-links a { margin: 0 16px 0 6px; display: inline-block; }
+/* 进入答题/结果页时隐藏正文，避免干扰 */
+/* 进入答题/结果页时隐藏正文（由 script.js 切换 body.in-test） */
+body.in-test .seo-intro { display: none; }
+@media (max-width: 480px) {
+  .seo-intro .seo-card { padding: 24px 18px; font-size: 14px; }
+  .seo-links a { margin-right: 10px; }
+}

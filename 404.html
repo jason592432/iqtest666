@@ -44,5 +44,16 @@
   <p>你访问的页面不存在，可能已被移动或删除。</p>
   <a href="/">返回首页</a>
   <script src="/js/analytics.js" defer></script>
+<script>
+/* 百度自动推送：页面被访问时主动告知百度，需在搜索资源平台完成站点验证后生效 */
+(function(){
+  try{
+    var bp = document.createElement('script');
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(bp, s);
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

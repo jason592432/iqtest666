@@ -96,6 +96,8 @@ function dText(d) {
 function showPage(name) {
   Object.values(pages).forEach(p => p.classList.remove('active'));
   if (pages[name]) pages[name].classList.add('active');
+  // 非选择页（答题/结果）时隐藏页面底部的说明正文
+  document.body.classList.toggle('in-test', name !== 'selector');
 }
 
 function shuffleArray(arr) {

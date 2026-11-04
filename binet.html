@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>斯坦福-比奈智力测试 - 免费在线IQ智力测验</title>
-  <meta name="description" content="参考SB-5架构的免费在线斯坦福-比奈智力测试，评估流体推理、知识、数量推理、视觉空间与工作记忆五大认知因子，适合6岁以上儿童及成人。">
+  <meta name="applicable-device" content="pc,mobile">
+  <title>斯坦福-比奈智力测验（SB-5）免费在线版 - 智商测试</title>
+  <meta name="description" content="参考斯坦福-比奈第五版（SB-5）架构的免费在线智商测试。30 道题覆盖流体推理、知识、数量推理、视觉空间与工作记忆五个因子，25 分钟出分，6 岁以上可测。">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://iq-test.com.cn/binet">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="stylesheet" href="css/style.css">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="斯坦福-比奈智力测试 - 免费在线IQ智力测验">
+  <meta property="og:title" content="斯坦福-比奈智力测验（SB-5）免费在线版 - 智商测试">
   <meta property="og:description" content="参考SB-5架构的免费在线斯坦福-比奈智力测试，评估流体推理、知识、数量推理、视觉空间与工作记忆五大认知因子。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://iq-test.com.cn/binet">
@@ -128,6 +129,7 @@ var _hmt = _hmt || [];
         </div>
       </div>
     </div>
+
 
     <div id="reminder" class="page">
       <div class="card reminder-card">
@@ -253,6 +255,26 @@ var _hmt = _hmt || [];
     </div>
   </div>
 
+  <section class="seo-intro"><div class="seo-card">
+<h2>斯坦福-比奈智力测验的来历</h2>
+<p>1905 年，法国心理学家比奈（Alfred Binet）与西蒙受巴黎教育部门委托，编出了世界上第一个实用的智力测验——比奈-西蒙量表，用来识别需要额外辅导的学生。1916 年斯坦福大学的推孟（Lewis Terman）把它修订为斯坦福-比奈量表，并首次引入「智商」这个概念（当时用智力年龄除以实际年龄）。</p>
+<p>现行版本是 SB-5（2003 年），结构上已经和韦氏很接近：同样拆成五个认知因子，同样给出总智商。它的特点是题目跨度大——从幼儿到成人共用一套连续难度梯度，所以对高分段和低分段的区分都比较细。</p>
+<h2>五个因子</h2>
+<ul>
+<li><strong>流体推理</strong>——在没有先备知识的情况下发现规律。</li>
+<li><strong>知识</strong>——词汇、常识等积累性知识。</li>
+<li><strong>数量推理</strong>——数字关系与心算。</li>
+<li><strong>视觉空间</strong>——图形建构与空间关系。</li>
+<li><strong>工作记忆</strong>——短时存储与同时加工。</li>
+</ul>
+<h2>本站版本说明</h2>
+<p>在线版参考 SB-5 的五因子架构，自编 30 道题、限时 25 分钟，6 岁以上可用。和完整版相比，它没有做年龄分段的题目起点、也没有常模换算，因此结果只适合自我参照，<strong>不能用于诊断或与专业报告对比</strong>。</p>
+<h2>常见问题</h2>
+<p><strong>比奈和韦氏有什么区别？</strong>结构接近，差别在题目形式和常模样本；专业机构通常按需要选用，个人自测不必纠结用哪一个。</p>
+<p><strong>分数为什么比预期高？</strong>本站采用线性换算且题目偏基础，分数普遍偏高，参考趋势比参考绝对值更有意义。</p>
+      <div class="seo-links"><span>延伸阅读：</span><a href="/blog/stanford-binet-history">斯坦福-比奈的历史</a><a href="/blog/iq-scores-explained">IQ 分数区间怎么解读</a><a href="/blog/fluid-vs-crystallized">流体智力与晶体智力</a></div>
+</div></section>
+
   <div class="feedback-bar">
     <span id="bookmarkBtn" class="bookmark-btn">🔖 <span data-i18n="bookmark.text">收藏本站</span></span>
     <span class="sep">|</span>
@@ -261,7 +283,8 @@ var _hmt = _hmt || [];
   <!-- msg -->
 <div class="msg-btn" id="msgBtn" onclick="toggleMsgBoard()">💬</div>
 <div class="msg-board" id="msgBoard"><div class="msg-header"><span>📝 留言板</span><button class="msg-close" onclick="toggleMsgBoard()">✕</button></div><div class="msg-list" id="msgList"></div><div class="msg-form"><input class="msg-input" id="msgInput" placeholder="写下你想说的..." maxlength="200"><button class="msg-send" onclick="sendMsg()">发送</button></div><div class="msg-empty" id="msgEmpty">还没有留言，来写第一条吧 ✍️</div></div>
-<p class="disclaimer-bar">本站测试为趣味性评估，仅供娱乐参考，不构成心理或医学诊断。</p>
+
+  <p class="disclaimer-bar">本站测试为趣味性评估，仅供娱乐参考，不构成心理或医学诊断。</p>
 
   <svg style="width:0;height:0;">
     <defs>
@@ -277,5 +300,16 @@ var _hmt = _hmt || [];
   <script>window.AUTO_START_TEST = 'binet';</script>
   <script src="js/script.js"></script>
   <script src="/js/analytics.js" defer></script>
+<script>
+/* 百度自动推送：页面被访问时主动告知百度，需在搜索资源平台完成站点验证后生效 */
+(function(){
+  try{
+    var bp = document.createElement('script');
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(bp, s);
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

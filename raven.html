@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>瑞文推理测验 - 免费在线IQ智力测验</title>
-  <meta name="description" content="参考瑞文标准推理测验(SPM)的免费在线瑞文推理测验，全图形模式识别，不受语言文化影响，适合6岁以上儿童及成人，即时出结果。">
+  <meta name="applicable-device" content="pc,mobile">
+  <title>瑞文标准推理测验（SPM）免费在线 - 60题图形推理智商测试</title>
+  <meta name="description" content="60 道全图形矩阵推理题，按瑞文标准推理测验 SPM 的 5 组 × 12 题结构编排，不依赖语言与知识背景，40 分钟完成并即时出分，6 岁以上可测。">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://iq-test.com.cn/raven">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="stylesheet" href="css/style.css">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="瑞文推理测验 - 免费在线IQ智力测验">
+  <meta property="og:title" content="瑞文标准推理测验（SPM）免费在线 - 60题图形推理智商测试">
   <meta property="og:description" content="参考瑞文标准推理测验(SPM)的免费在线瑞文推理测验，全图形模式识别，不受语言文化影响。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://iq-test.com.cn/raven">
@@ -128,6 +129,7 @@ var _hmt = _hmt || [];
         </div>
       </div>
     </div>
+
 
     <div id="reminder" class="page">
       <div class="card reminder-card">
@@ -253,6 +255,21 @@ var _hmt = _hmt || [];
     </div>
   </div>
 
+  <section class="seo-intro"><div class="seo-card">
+<h2>瑞文标准推理测验（SPM）是什么</h2>
+<p>瑞文推理测验由英国心理学家 John C. Raven 在 1938 年编制，最初用于研究遗传与智力的关系，二战期间被英美军队大规模用于人员筛选。标准版 SPM 共 60 题，分成 A、B、C、D、E 五组，每组 12 题，难度依次递增。</p>
+<p>每道题都是一个 3×3 的图形矩阵，右下角缺一块，需要从选项里找出能补全规律的那一个。题目只用图形，不用文字，也不需要专业知识——这是它被称为「文化公平测验」的原因，也是它在跨文化研究和教育筛查里被长期使用的原因。</p>
+<h2>为什么它和语言类测验不一样</h2>
+<p>韦氏那一类测验里有大量词汇、常识题，本质是在考「你已经学到了多少」；瑞文考的是「面对一个陌生规律，你能不能推出来」。前者受教育和语言环境影响大，后者相对小。所以同一批人做这两类测验，排名不一定一致。</p>
+<h2>本站版本说明</h2>
+<p>在线版按 SPM 的 5 组 × 12 题结构编排，共 60 题，限时 40 分钟。A、B 组每题 6 个选项，C、D、E 组每题 8 个选项。年龄较小的孩子或第一次接触图形推理的成年人，建议先做 30 题的韦氏版热身。</p>
+<h2>常见问题</h2>
+<p><strong>需要认字吗？</strong>不需要，题目全是图形，6 岁以上即可作答。</p>
+<p><strong>40 分钟不够怎么办？</strong>超时会自动提交已答题目，建议先做完会做的，再回头处理难题。</p>
+<p><strong>分数代表什么？</strong>答对越多分数越高，但同样没有做年龄常模，适合和自己在不同时间的成绩比较。</p>
+      <div class="seo-links"><span>延伸阅读：</span><a href="/blog/what-is-ravens-spm">SPM 的结构与用途</a><a href="/blog/raven-pattern-types">瑞文常见题型解析</a><a href="/blog/raven-culture-fair">瑞文为什么不受语言影响</a></div>
+</div></section>
+
   <div class="feedback-bar">
     <span id="bookmarkBtn" class="bookmark-btn">🔖 <span data-i18n="bookmark.text">收藏本站</span></span>
     <span class="sep">|</span>
@@ -261,7 +278,8 @@ var _hmt = _hmt || [];
   <!-- msg -->
 <div class="msg-btn" id="msgBtn" onclick="toggleMsgBoard()">💬</div>
 <div class="msg-board" id="msgBoard"><div class="msg-header"><span>📝 留言板</span><button class="msg-close" onclick="toggleMsgBoard()">✕</button></div><div class="msg-list" id="msgList"></div><div class="msg-form"><input class="msg-input" id="msgInput" placeholder="写下你想说的..." maxlength="200"><button class="msg-send" onclick="sendMsg()">发送</button></div><div class="msg-empty" id="msgEmpty">还没有留言，来写第一条吧 ✍️</div></div>
-<p class="disclaimer-bar">本站测试为趣味性评估，仅供娱乐参考，不构成心理或医学诊断。</p>
+
+  <p class="disclaimer-bar">本站测试为趣味性评估，仅供娱乐参考，不构成心理或医学诊断。</p>
 
   <svg style="width:0;height:0;">
     <defs>
@@ -272,11 +290,21 @@ var _hmt = _hmt || [];
     </defs>
   </svg>
 
-  <script src="js/data-raven.js"></script>
   <script src="js/data-raven-spm.js"></script>
   <script src="js/i18n.js"></script>
-  <script>window.AUTO_START_TEST = 'raven';</script>
+  <script>window.AUTO_START_TEST = 'raven-spm';</script>
   <script src="js/script.js"></script>
   <script src="/js/analytics.js" defer></script>
+<script>
+/* 百度自动推送：页面被访问时主动告知百度，需在搜索资源平台完成站点验证后生效 */
+(function(){
+  try{
+    var bp = document.createElement('script');
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(bp, s);
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
