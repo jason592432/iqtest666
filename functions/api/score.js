@@ -48,6 +48,11 @@ export async function onRequest(context) {
       };
       if (dur) record.dur = dur;
       if (ref) record.ref = ref;
+      // 原始正确率 + 评分版本：以后调整评分曲线时，可以按版本区分，不用反推
+      const pct = Number(body.pct);
+      if (pct > 0 && pct <= 1) record.pct = Math.round(pct * 10000) / 10000;
+      const ver = parseInt(body.ver, 10);
+      if (ver > 0 && ver < 100) record.ver = ver;
 
       // 存入 KV（按中国日期分片存储，避免单 key 超限）
       const dateKey = getChinaDate();
@@ -102,9 +107,10 @@ export async function onRequest(context) {
       const todayCount = byDayCount[today] || 0;
       const yesterdayCount = byDayCount[yesterdayKey] || 0;
 
-      let sum = 0, max = 0, min = 0, durSum = 0, durN = 0;
+      let sum = 0, max = 0, min = 0, durSum = 0, durN = 0, pctSum = 0, pctN = 0;
       const byTest = {};
       const bySource = {};
+      const hist = {};   // 分数直方图，用于校准，不含任何个人信息
       for (const r of allScores) {
         const s = r.score || 0;
         sum += s;
@@ -116,6 +122,9 @@ export async function onRequest(context) {
         byTest[t].total += s;
         if (r.dur > 0) { durSum += r.dur; durN++; }
         if (r.ref) bySource[r.ref] = (bySource[r.ref] || 0) + 1;
+        const b = Math.round(s);
+        hist[b] = (hist[b] || 0) + 1;
+        if (typeof r.pct === 'number') { pctSum += r.pct; pctN++; }
       }
 
       const stats = {
@@ -126,6 +135,7 @@ export async function onRequest(context) {
         maxScore: max,
         minScore: min,
         avgDur: durN ? Math.round(durSum / durN) : 0,
+        avgPct: pctN ? +(pctSum / pctN).toFixed(3) : 0,
       };
 
       const sourceList = Object.keys(bySource)
@@ -138,6 +148,7 @@ export async function onRequest(context) {
         stats: stats,
         byTest: byTest,
         bySource: sourceList,
+        hist: hist,
         dailyStats: dailyStats,
         scores: allScores.slice(0, 200)
       }), { headers });

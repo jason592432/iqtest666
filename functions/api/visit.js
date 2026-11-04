@@ -38,7 +38,20 @@ export async function onRequest(context) {
       const country = (request.cf && request.cf.country) ? request.cf.country : '';
       const device = /mobile|android|iphone|ipad|ipod/i.test(ua) ? 'mobile' : 'desktop';
 
-      const record = { t: Date.now(), p: path, r: ref, c: country, d: device, h: ipHash };
+      // 访客标识：优先用一年期第一方 cookie（IP 在运营商 NAT 下会大量重复，UV 会被低估）
+      const now = Date.now();
+      let vid = parseCookie(request.headers.get('Cookie'), 'iq_vid');
+      let isNew = 0;
+      if (!isValidVid(vid)) {
+        vid = newVid(now);
+        isNew = 1;
+      } else {
+        const created = vidCreatedAt(vid);
+        if (created && created < startOfChinaDay(now)) isNew = 0;  // 老访客
+        else if (created) isNew = 1;
+      }
+
+      const record = { t: now, p: path, r: ref, c: country, d: device, h: ipHash, v: vid, n: isNew };
 
       const kvKey = 'visits:' + getChinaDate();
       const existing = (await env.MESSAGES_KV.get(kvKey, 'json')) || [];
@@ -47,7 +60,11 @@ export async function onRequest(context) {
       if (existing.length > 3000) existing.splice(0, existing.length - 3000);
       await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing));
 
-      return new Response(JSON.stringify({ success: true }), { headers });
+      return new Response(JSON.stringify({ success: true }), {
+        headers: jsonHeaders({
+          'Set-Cookie': 'iq_vid=' + vid + '; Path=/; Max-Age=31536000; SameSite=Lax; Secure; HttpOnly'
+        })
+      });
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), { status: 500, headers });
     }
@@ -76,7 +93,7 @@ export async function onRequest(context) {
       for (let i = 0; i < dateList.length; i++) {
         const arr = Array.isArray(raw[i]) ? raw[i] : [];
         const uvSet = {};
-        for (let k = 0; k < arr.length; k++) { if (arr[k].h) uvSet[arr[k].h] = 1; }
+        for (let k = 0; k < arr.length; k++) { const key = arr[k].v || arr[k].h; if (key) uvSet[key] = 1; }
         daily.push({ date: dateList[i], pv: arr.length, uv: Object.keys(uvSet).length });
         for (let k = 0; k < arr.length; k++) allRecords.push(arr[k]);
       }
@@ -84,11 +101,15 @@ export async function onRequest(context) {
       // 窗口汇总：PV = 记录总数，UV = 窗口内去重设备指纹
       const totalPv = allRecords.length;
       const uvAll = {};
+      let newVisits = 0, returnVisits = 0, vidVisits = 0;
       const srcMap = {}, pageMap = {};
       const devMap = { mobile: 0, desktop: 0 };
       for (let k = 0; k < allRecords.length; k++) {
         const r = allRecords[k];
-        if (r.h) uvAll[r.h] = 1;
+        const key = r.v || r.h;
+        if (key) uvAll[key] = 1;
+        if (r.v) { vidVisits++; newVisits += r.n ? 1 : 0; }
+        if (r.v && !r.n) returnVisits++;
         const sname = parseSource(r.r);
         srcMap[sname] = (srcMap[sname] || 0) + 1;
         const pg = r.p || '/';
@@ -114,7 +135,13 @@ export async function onRequest(context) {
         days: days,
         today: todayStat,
         yesterday: yesterday,
-        summary: { pv: totalPv, uv: totalUv },
+        summary: {
+          pv: totalPv,
+          uv: totalUv,
+          newVisits: newVisits,
+          returnVisits: returnVisits,
+          vidCoverage: totalPv ? +(vidVisits / totalPv * 100).toFixed(1) : 0
+        },
         daily: daily,
         bySource: bySource,
         byPage: byPage,
@@ -146,6 +173,35 @@ function addDays(dateStr, n) {
   const m = String(d.getUTCMonth() + 1).padStart(2, '0');
   const dd = String(d.getUTCDate()).padStart(2, '0');
   return y + '-' + m + '-' + dd;
+}
+
+// ---- 访客标识 ----
+function parseCookie(header, name) {
+  if (!header) return '';
+  const m = String(header).match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+function isValidVid(v) {
+  return typeof v === 'string' && /^v1\.[0-9a-z]{5,10}\.[0-9a-f]{6,16}$/.test(v);
+}
+
+function newVid(ts) {
+  const rand = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+  return 'v1.' + Math.floor(ts / 1000).toString(36) + '.' + rand;
+}
+
+function vidCreatedAt(v) {
+  if (!isValidVid(v)) return 0;
+  const n = parseInt(v.split('.')[1], 36);
+  return n ? n * 1000 : 0;
+}
+
+function startOfChinaDay(ts) {
+  const d = new Date(ts + 8 * 3600 * 1000);
+  d.setUTCHours(0, 0, 0, 0);
+  return d.getTime() - 8 * 3600 * 1000;
 }
 
 // 解析来源域名 → 友好名称
