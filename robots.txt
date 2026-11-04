@@ -1,3 +1,16 @@
+# 百度 / 华为花瓣搜索：显式放行
+# 背景：Cloudflare 的托管 robots.txt 会把 Baiduspider、PetalBot 一起 Disallow 掉，
+# 这里追加一条更靠后、同 UA 的 Allow 规则作为兜底；彻底解决需在 Cloudflare 控制台
+# 关闭「Managed robots.txt / 屏蔽 AI 爬虫」。
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Baiduspider-render
+Allow: /
+
+User-agent: PetalBot
+Allow: /
+
 User-agent: *
 Allow: /
 Disallow: /admin/
