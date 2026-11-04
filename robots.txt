@@ -1,15 +1,26 @@
-# 百度 / 华为花瓣搜索：显式放行
-# 背景：Cloudflare 的托管 robots.txt 会把 Baiduspider、PetalBot 一起 Disallow 掉，
-# 这里追加一条更靠后、同 UA 的 Allow 规则作为兜底；彻底解决需在 Cloudflare 控制台
-# 关闭「Managed robots.txt / 屏蔽 AI 爬虫」。
+# 2026-11-04：已关闭 Cloudflare 的 Bot Preference Sync，托管 robots.txt 不再注入。
+# AI 训练型爬虫（GPTBot / CCBot 等）由 Cloudflare 边缘规则拦截（实测 403），
+# 不在这里重复声明，避免和搜索引擎规则混在一起。
+#
+# 百度 / 花瓣显式列出：万一以后有人重新打开 Bot Preference Sync，这组规则仍会生效。
+
 User-agent: Baiduspider
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /test-raven-spm
 
 User-agent: Baiduspider-render
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /test-raven-spm
 
 User-agent: PetalBot
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /test-raven-spm
 
 User-agent: *
 Allow: /
