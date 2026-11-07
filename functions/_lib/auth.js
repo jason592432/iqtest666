@@ -7,7 +7,7 @@
 // - token 用 HMAC-SHA256 签名，密钥由密码派生；不落库、可无状态校验。
 // - 旧版 ?token=admin123 的做法已废弃：接口只接受签名 token。
 
-const DEFAULT_ADMIN_PASSWORD = 'IqTest-2026-Rk9xQm7V';
+const DEFAULT_ADMIN_PASSWORD = 'admin2311';
 const TOKEN_TTL_SEC = 12 * 60 * 60;
 const enc = new TextEncoder();
 
