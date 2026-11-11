@@ -136,7 +136,7 @@ export async function scoreReport(db, days) {
       avgDur: agg.ad ? Math.round(agg.ad) : 0,
       avgPct: agg.ap ? +(+agg.ap).toFixed(3) : 0,
       starts: startTotal,
-      completion: startTotal ? Math.min(100, Math.round(total / startTotal * 1000) / 10) : 0,
+      completion: startTotal >= total * 0.5 ? Math.min(100, Math.round(total / startTotal * 1000) / 10) : 0,
     },
     byTest,
     hist,

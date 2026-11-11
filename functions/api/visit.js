@@ -56,7 +56,7 @@ export async function onRequest(context) {
         await insertVisit(env.DB, {
           ts: now, date: chinaDate(now), path: path,
           src: parseSource(ref), country: country, device: device,
-          vhash: ipHash, isnew: isNew
+          vhash: vid, isnew: isNew
         });
         return new Response(JSON.stringify({ success: true }), {
           headers: jsonHeaders({ 'Set-Cookie': 'iq_vid=' + vid + '; Path=/; Max-Age=31536000; SameSite=Lax; Secure; HttpOnly' })

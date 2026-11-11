@@ -211,7 +211,7 @@ export async function onRequest(context) {
         avgDur: durN ? Math.round(durSum / durN) : 0,
         avgPct: pctN ? +(pctSum / pctN).toFixed(3) : 0,
         starts: startTotal,
-        completion: startTotal ? Math.min(100, Math.round(allScores.length / startTotal * 1000) / 10) : 0,
+        completion: startTotal >= allScores.length * 0.5 ? Math.min(100, Math.round(allScores.length / startTotal * 1000) / 10) : 0,
       };
 
       const sourceList = Object.keys(bySource)
