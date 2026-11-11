@@ -3,7 +3,7 @@
 // GET:  查询访问统计（需后台 token），返回 PV / UV / 来源 / 热门页面 / 设备
 // 使用 KV namespace: MESSAGES_KV（与留言、分数共用）
 
-import { isAdmin, clientIp, rateLimit, jsonHeaders } from '../_lib/auth.js';
+import { isAdmin, clientIp, jsonHeaders } from '../_lib/auth.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -28,12 +28,6 @@ export async function onRequest(context) {
       }
 
       const ip = clientIp(request);
-      // 单 IP 每小时最多 600 次浏览，防止刷量；超限静默丢弃
-      const limited = await rateLimit(env, 'visit:' + ip, 600, 60 * 60);
-      if (!limited.ok) {
-        return new Response(JSON.stringify({ success: true, skipped: 'rate' }), { headers });
-      }
-
       const ipHash = hashStr(ip);
       const country = (request.cf && request.cf.country) ? request.cf.country : '';
       const device = /mobile|android|iphone|ipad|ipod/i.test(ua) ? 'mobile' : 'desktop';
@@ -55,6 +49,17 @@ export async function onRequest(context) {
 
       const kvKey = 'visits:' + getChinaDate();
       const existing = (await env.MESSAGES_KV.get(kvKey, 'json')) || [];
+
+      // 限流直接复用当天记录：不额外消耗 KV 读写（原来每次请求要多 1 读 1 写）
+      const hourAgo = now - 3600 * 1000;
+      let sameIp = 0;
+      for (let i = existing.length - 1; i >= 0 && existing[i].t > hourAgo; i--) {
+        if (existing[i].h === ipHash) sameIp++;
+      }
+      if (sameIp >= 600) {
+        return new Response(JSON.stringify({ success: true, skipped: 'rate' }), { headers });
+      }
+
       existing.push(record);
       // 每天最多 3000 条，超出则丢弃最早的
       if (existing.length > 3000) existing.splice(0, existing.length - 3000);
@@ -86,7 +91,7 @@ export async function onRequest(context) {
       for (let i = days - 1; i >= 0; i--) dateList.push(addDays(today, -i));
 
       // 并发读取，避免大窗口串行 KV 读取
-      const raw = await Promise.all(dateList.map(d => env.MESSAGES_KV.get('visits:' + d, 'json')));
+      const raw = await Promise.all(dateList.map(d => env.MESSAGES_KV.get('visits:' + d, 'json', { cacheTtl: 60 })));
 
       const daily = [];
       const allRecords = [];

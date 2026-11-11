@@ -3,7 +3,7 @@
 // GET:  查询分数列表（需后台 token：Authorization: Bearer <token>）
 // 使用 KV namespace: MESSAGES_KV (与留言板共用)
 
-import { isAdmin, clientIp, rateLimit, jsonHeaders } from '../_lib/auth.js';
+import { isAdmin, clientIp, jsonHeaders } from '../_lib/auth.js';
 
 const TESTS = new Set(['wais', 'wisc', 'binet', 'raven', 'raven-spm']);
 
@@ -19,12 +19,6 @@ export async function onRequest(context) {
   if (request.method === 'POST') {
     try {
       const ip = clientIp(request);
-      // 单 IP 每小时最多 60 条，防止刷数据；超限静默丢弃（不打扰真实用户）
-      const limited = await rateLimit(env, 'score:' + ip, 60, 60 * 60);
-      if (!limited.ok) {
-        return new Response(JSON.stringify({ success: true, skipped: 'rate' }), { headers });
-      }
-
       const body = await request.json();
 
       // 开始答题事件：单独计数，用来算完成率（完成数 / 开始数）
@@ -81,13 +75,24 @@ export async function onRequest(context) {
       const dateKey = getChinaDate();
       const kvKey = 'scores:' + dateKey;
       const existing = await env.MESSAGES_KV.get(kvKey, 'json') || [];
+
+      // 同一 IP 每小时最多 60 条：直接数已有的当天记录，不再额外读写 KV
+      const hourAgo = Date.now() - 3600 * 1000;
+      let sameIp = 0;
+      for (let i = existing.length - 1; i >= 0 && existing[i].timestamp > hourAgo; i--) {
+        if (existing[i].ip === ip) sameIp++;
+      }
+      if (sameIp >= 60) {
+        return new Response(JSON.stringify({ success: true, skipped: 'rate' }), { headers });
+      }
+
       existing.push(record);
       // 每天最多存 2000 条，超出则覆盖最早的
       if (existing.length > 2000) existing.splice(0, existing.length - 2000);
       await env.MESSAGES_KV.put(kvKey, JSON.stringify(existing), { expirationTtl: 400 * 24 * 3600 });
 
       // 题目质量：累计每道题的答错次数，用来发现「答案可能是错的」或「太简单」的题
-      if (Array.isArray(body.wrong) && body.n > 0 && test !== 'unknown') {
+      if (Array.isArray(body.wrong) && body.n > 0 && test !== 'unknown' && Math.random() < 0.34) {
         try {
           const qKey = 'qstat:' + test;
           const qs = (await env.MESSAGES_KV.get(qKey, 'json')) || { n: 0, w: {} };
@@ -128,10 +133,10 @@ export async function onRequest(context) {
       }
 
       // 并发读取，避免 365 天窗口串行 365 次 KV 读取导致超时
-      const raw = await Promise.all(dateList.map(d => env.MESSAGES_KV.get('scores:' + d, 'json')));
+      const raw = await Promise.all(dateList.map(d => env.MESSAGES_KV.get('scores:' + d, 'json', { cacheTtl: 60 })));
       const [startRaw, qstatRaw] = await Promise.all([
-        Promise.all(dateList.map(d => env.MESSAGES_KV.get('starts:' + d, 'json'))),
-        Promise.all([...TESTS].map(t => env.MESSAGES_KV.get('qstat:' + t, 'json')))
+        Promise.all(dateList.map(d => env.MESSAGES_KV.get('starts:' + d, 'json', { cacheTtl: 60 }))),
+        Promise.all([...TESTS].map(t => env.MESSAGES_KV.get('qstat:' + t, 'json', { cacheTtl: 300 })))
       ]);
 
       const allScores = [];

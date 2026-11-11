@@ -241,7 +241,7 @@ function setRange(n) {
 function loadData() {
   var days = RANGE;
   var hint = document.getElementById('autoHint');
-  if (hint) hint.textContent = days <= 30 ? '自动刷新：30秒' : '大范围查询：已暂停自动刷新';
+  if (hint) hint.textContent = days <= 30 ? '自动刷新：5分钟' : '大范围查询：已暂停自动刷新';
 
   var scoreP = fetch('/api/score?days=' + days, { headers: authHeaders() })
     .then(function(r){ if (r.status === 403) { showLogin('登录已过期，请重新输入密码'); throw new Error('登录已过期，请重新登录'); } return r.json(); });
@@ -420,7 +420,7 @@ function renderVisit(data) {
 }
 
 // Auto-refresh: 仅小范围（<=30天）每30秒刷新，大范围避免 KV 读放大
-setInterval(function(){ if (RANGE <= 30 && TOKEN) loadData(); }, 30000);
+setInterval(function(){ if (RANGE <= 30 && TOKEN && !document.hidden) loadData(); }, 300000);
 
 function getSourceLabel(s) { return s; }
 function getPageLabel(p) {
