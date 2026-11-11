@@ -437,7 +437,7 @@ function calcScore() {
 
 // ---- 打赏卡片（结果页底部，折叠式）----
 function initDonate() {
-  var card = document.querySelector('.result-card');
+  var card = document.querySelector('#result .result-card');  // 注意：#timeout 也用了 result-card 这个 class
   if (!card || document.getElementById('donateBox')) return;
   var box = document.createElement('div');
   box.className = 'donate-box';
