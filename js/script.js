@@ -434,6 +434,47 @@ function calcScore() {
   return { totalRaw, maxRaw, pct, dimPct, correctCount, unanswered, total: currentTest.questions.length, fsiq, indexScores, domains, _rawAnswers: answers };
 }
 
+
+// ---- 打赏卡片（结果页底部，折叠式）----
+function initDonate() {
+  var card = document.querySelector('.result-card');
+  if (!card || document.getElementById('donateBox')) return;
+  var box = document.createElement('div');
+  box.className = 'donate-box';
+  box.id = 'donateBox';
+  box.innerHTML =
+    '<button class="donate-toggle" id="donateToggle" aria-expanded="false" onclick="toggleDonate()">' +
+      '☕ <span>请我喝杯咖啡</span>' +
+    '</button>' +
+    '<div class="donate-panel" id="donatePanel" hidden>' +
+      '<p class="donate-lead">这个站没有广告，也没有付费墙，所有测试免费。<br>' +
+      '服务器和域名一年大概 ¥600，由我一个人维护。<br>' +
+      '如果它让你对自己多了一点了解，可以随意打赏 ☕</p>' +
+      '<img class="donate-qr" id="donateQr" data-src="/images/donate-qr.png" alt="微信赞赏码" width="220" height="220">' +
+      '<p class="donate-note">微信内长按图片识别 · 金额随意，不打赏也完全不影响使用</p>' +
+    '</div>';
+  card.appendChild(box);
+}
+
+function toggleDonate() {
+  var panel = document.getElementById('donatePanel');
+  var btn = document.getElementById('donateToggle');
+  var img = document.getElementById('donateQr');
+  if (!panel) return;
+  var opening = panel.hasAttribute('hidden');
+  if (opening) {
+    panel.removeAttribute('hidden');
+    if (img && !img.src) img.src = img.getAttribute('data-src');
+  } else {
+    panel.setAttribute('hidden', '');
+  }
+  if (btn) btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+  if (opening) {
+    try { if (window.gtag) gtag('event', 'donate_open'); } catch (e) {}
+    try { if (window._hmt) _hmt.push(['_trackEvent', 'donate', 'open']); } catch (e) {}
+  }
+}
+
 // ---- Results ----
 function showResult() {
   const result = calcScore();
@@ -891,6 +932,7 @@ function renderSelector() {
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize language toggle buttons
   initLangToggle();
+  initDonate();
   renderSelector();
 
   // Auto-start test if specified (for SEO sub-pages)
