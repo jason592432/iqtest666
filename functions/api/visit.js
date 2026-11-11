@@ -4,6 +4,7 @@
 // 使用 KV namespace: MESSAGES_KV（与留言、分数共用）
 
 import { isAdmin, clientIp, jsonHeaders } from '../_lib/auth.js';
+import { insertVisit, countRecentVisits, visitReport, chinaDate } from '../_lib/d1.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -47,6 +48,21 @@ export async function onRequest(context) {
 
       const record = { t: now, p: path, r: ref, c: country, d: device, h: ipHash, v: vid, n: isNew };
 
+      if (env.DB) {
+        const recent = await countRecentVisits(env.DB, ipHash, now - 3600 * 1000);
+        if (recent >= 600) {
+          return new Response(JSON.stringify({ success: true, skipped: 'rate' }), { headers });
+        }
+        await insertVisit(env.DB, {
+          ts: now, date: chinaDate(now), path: path,
+          src: parseSource(ref), country: country, device: device,
+          vhash: ipHash, isnew: isNew
+        });
+        return new Response(JSON.stringify({ success: true }), {
+          headers: jsonHeaders({ 'Set-Cookie': 'iq_vid=' + vid + '; Path=/; Max-Age=31536000; SameSite=Lax; Secure; HttpOnly' })
+        });
+      }
+
       const kvKey = 'visits:' + getChinaDate();
       const existing = (await env.MESSAGES_KV.get(kvKey, 'json')) || [];
 
@@ -85,6 +101,10 @@ export async function onRequest(context) {
       let days = parseInt(url.searchParams.get('days'), 10);
       if (!days || days < 1) days = 30;
       if (days > 365) days = 365;
+
+      if (env.DB) {
+        return new Response(JSON.stringify(await visitReport(env.DB, days)), { headers });
+      }
 
       const today = getChinaDate();
       const dateList = [];

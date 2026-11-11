@@ -4,6 +4,7 @@
 // 使用 KV namespace: MESSAGES_KV (与留言板共用)
 
 import { isAdmin, clientIp, jsonHeaders } from '../_lib/auth.js';
+import { insertScore, countRecentByIp, bumpStart, scoreReport } from '../_lib/d1.js';
 
 const TESTS = new Set(['wais', 'wisc', 'binet', 'raven', 'raven-spm']);
 
@@ -24,12 +25,16 @@ export async function onRequest(context) {
       // 开始答题事件：单独计数，用来算完成率（完成数 / 开始数）
       if (body.event === 'start') {
         const t = TESTS.has(body.test) ? body.test : 'unknown';
-        const day = getChinaDate();
-        const key = 'starts:' + day;
-        const cur = (await env.MESSAGES_KV.get(key, 'json')) || { total: 0 };
-        cur.total = (cur.total || 0) + 1;
-        cur[t] = (cur[t] || 0) + 1;
-        await env.MESSAGES_KV.put(key, JSON.stringify(cur), { expirationTtl: 400 * 24 * 3600 });
+        if (env.DB) {
+          await bumpStart(env.DB, getChinaDate(), t);
+        } else {
+          const day = getChinaDate();
+          const key = 'starts:' + day;
+          const cur = (await env.MESSAGES_KV.get(key, 'json')) || { total: 0 };
+          cur.total = (cur.total || 0) + 1;
+          cur[t] = (cur[t] || 0) + 1;
+          await env.MESSAGES_KV.put(key, JSON.stringify(cur), { expirationTtl: 400 * 24 * 3600 });
+        }
         return new Response(JSON.stringify({ success: true }), { headers });
       }
 
@@ -70,6 +75,20 @@ export async function onRequest(context) {
       }
       const ver = parseInt(body.ver, 10);
       if (ver > 0 && ver < 100) record.ver = ver;
+
+      if (env.DB) {
+        const recent = await countRecentByIp(env.DB, 'scores', ip, Date.now() - 3600 * 1000);
+        if (recent >= 60) {
+          return new Response(JSON.stringify({ success: true, skipped: 'rate' }), { headers });
+        }
+        await insertScore(env.DB, {
+          ts: record.timestamp, date: getChinaDate(), test: test, score: score,
+          label: label, dur: dur || 0, pct: record.pct || 0, ver: record.ver || 0,
+          src: ref, ip: ip, location: location,
+          dimp: record.dimp || null, wrong: Array.isArray(body.wrong) ? body.wrong : null,
+        });
+        return new Response(JSON.stringify({ success: true }), { headers });
+      }
 
       // 存入 KV（按中国日期分片存储，避免单 key 超限）
       const dateKey = getChinaDate();
@@ -125,6 +144,10 @@ export async function onRequest(context) {
       let days = parseInt(url.searchParams.get('days'), 10);
       if (!days || days < 1) days = 30;
       if (days > 365) days = 365;
+
+      if (env.DB) {
+        return new Response(JSON.stringify(await scoreReport(env.DB, days)), { headers });
+      }
 
       const today = getChinaDate();
       const dateList = [];

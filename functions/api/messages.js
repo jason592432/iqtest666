@@ -6,6 +6,7 @@
 import { clientIp, rateLimit, jsonHeaders } from '../_lib/auth.js';
 
 import { isAdmin } from '../_lib/auth.js';
+import { listMessages, addMessage, removeMessage } from '../_lib/d1.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -19,6 +20,9 @@ export async function onRequest(context) {
   // GET: 获取所有留言
   if (request.method === 'GET') {
     try {
+      if (env.DB) {
+        return new Response(JSON.stringify(await listMessages(env.DB)), { headers });
+      }
       const data = await env.MESSAGES_KV.get('messages', 'json');
       const list = Array.isArray(data) ? data : [];
       // 用 timestamp 重算北京时间，自动修正历史留言因 UTC 时区导致的 8 小时偏差
@@ -58,6 +62,12 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: '请勿发布大量链接' }), { status: 400, headers });
       }
 
+      if (env.DB) {
+        const id = Date.now();
+        await addMessage(env.DB, { id: id, text: text, time: formatChinaTime(id), ts: id });
+        return new Response(JSON.stringify({ success: true }), { headers });
+      }
+
       const msgs = await env.MESSAGES_KV.get('messages', 'json') || [];
       msgs.push({
         id: Date.now(),
@@ -84,6 +94,13 @@ export async function onRequest(context) {
     const id = url.searchParams.get('id');
     if (!id) {
       return new Response(JSON.stringify({ error: '缺少 id' }), { status: 400, headers });
+    }
+    if (env.DB) {
+      const removed = await removeMessage(env.DB, id);
+      if (!removed) {
+        return new Response(JSON.stringify({ error: '没找到这条留言' }), { status: 404, headers });
+      }
+      return new Response(JSON.stringify({ success: true, removed: removed }), { headers });
     }
     const list = await env.MESSAGES_KV.get('messages', 'json') || [];
     const next = list.filter(function (m) { return String(m.id) !== String(id); });
