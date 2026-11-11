@@ -4,7 +4,7 @@
 // 使用 KV namespace: MESSAGES_KV（与留言、分数共用）
 
 import { isAdmin, clientIp, jsonHeaders } from '../_lib/auth.js';
-import { insertVisit, countRecentVisits, visitReport, chinaDate } from '../_lib/d1.js';
+import { insertVisit, countRecentVisits, visitReport, chinaDate, vidFirst } from '../_lib/d1.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -56,7 +56,7 @@ export async function onRequest(context) {
         await insertVisit(env.DB, {
           ts: now, date: chinaDate(now), path: path,
           src: parseSource(ref), country: country, device: device,
-          vhash: vid, isnew: isNew
+          vhash: vid, isnew: isNew, vfirst: vidFirst(vid)
         });
         return new Response(JSON.stringify({ success: true }), {
           headers: jsonHeaders({ 'Set-Cookie': 'iq_vid=' + vid + '; Path=/; Max-Age=31536000; SameSite=Lax; Secure; HttpOnly' })

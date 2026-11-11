@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS visits (
   country TEXT DEFAULT '',
   device TEXT DEFAULT 'desktop',
   vhash TEXT DEFAULT '',
-  isnew INTEGER DEFAULT 0
+  isnew INTEGER DEFAULT 0,
+  vfirst INTEGER DEFAULT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_visits_date ON visits(date);
 CREATE INDEX IF NOT EXISTS idx_visits_vhash ON visits(vhash, ts);

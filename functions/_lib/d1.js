@@ -59,8 +59,16 @@ export async function bumpStart(db, date, test) {
 
 export async function insertVisit(db, v) {
   await db.prepare(
-    `INSERT INTO visits (ts,date,path,src,country,device,vhash,isnew) VALUES (?,?,?,?,?,?,?,?)`
-  ).bind(v.ts, v.date, v.path, v.src, v.country, v.device, v.vhash, v.isnew).run();
+    `INSERT INTO visits (ts,date,path,src,country,device,vhash,isnew,vfirst) VALUES (?,?,?,?,?,?,?,?,?)`
+  ).bind(v.ts, v.date, v.path, v.src, v.country, v.device, v.vhash, v.isnew, v.vfirst || 0).run();
+}
+
+// 从 cookie 里的 v1.<base36秒>.<rand> 解析访客首次出现时间
+export function vidFirst(vid) {
+  const m = /^v1\.([0-9a-z]{5,10})\./.exec(vid || '');
+  if (!m) return 0;
+  const n = parseInt(m[1], 36);
+  return n ? n * 1000 : 0;
 }
 
 export async function countRecentVisits(db, vhash, sinceTs) {
@@ -161,9 +169,9 @@ export async function visitReport(db, days) {
     db.prepare(`SELECT src, COUNT(*) c FROM visits WHERE date>=? GROUP BY src ORDER BY c DESC LIMIT 10`).bind(from),
     db.prepare(`SELECT path, COUNT(*) c FROM visits WHERE date>=? GROUP BY path ORDER BY c DESC LIMIT 10`).bind(from),
     db.prepare(`SELECT device, COUNT(*) c FROM visits WHERE date>=? GROUP BY device`).bind(from),
-    db.prepare(`SELECT COUNT(DISTINCT CASE WHEN isnew=0 THEN vhash END) ret,
-                       COUNT(DISTINCT CASE WHEN isnew=1 THEN vhash END) fresh
-                FROM visits WHERE date>=?`).bind(from),
+    db.prepare(`SELECT COUNT(DISTINCT CASE WHEN vfirst > 0 AND vfirst < ? THEN vhash END) ret,
+                       COUNT(DISTINCT CASE WHEN vfirst >= ? THEN vhash END) fresh
+                FROM visits WHERE date>=?`).bind(Date.parse(from + 'T00:00:00+08:00'), Date.parse(from + 'T00:00:00+08:00'), from),
   ]);
 
   const byDay = {};
