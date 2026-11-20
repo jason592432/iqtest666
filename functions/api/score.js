@@ -242,6 +242,23 @@ export async function onRequest(context) {
     }
   }
 
+  // DELETE: 删除一条答题记录（需后台 token，用于清理测试数据）
+  if (request.method === 'DELETE') {
+    const url = new URL(request.url);
+    if (!(await isAdmin(request, env, url))) {
+      return new Response(JSON.stringify({ error: '无权限' }), { status: 403, headers });
+    }
+    const ts = parseInt(url.searchParams.get('id'), 10);
+    if (!ts) {
+      return new Response(JSON.stringify({ error: '缺少 id' }), { status: 400, headers });
+    }
+    if (!env.DB) {
+      return new Response(JSON.stringify({ error: '仅 D1 模式支持删除' }), { status: 501, headers });
+    }
+    const res = await env.DB.prepare('DELETE FROM scores WHERE ts = ?').bind(ts).run();
+    return new Response(JSON.stringify({ success: true, removed: (res.meta && res.meta.changes) || 0 }), { headers });
+  }
+
   return new Response('Method not allowed', { status: 405, headers });
 }
 
