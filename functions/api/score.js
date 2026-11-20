@@ -20,7 +20,12 @@ export async function onRequest(context) {
   if (request.method === 'POST') {
     try {
       const ip = clientIp(request);
-      const body = await request.json();
+      let body;
+      try {
+        body = await request.json();
+      } catch (e) {
+        return new Response(JSON.stringify({ error: 'bad request' }), { status: 400, headers });
+      }
 
       // 开始答题事件：单独计数，用来算完成率（完成数 / 开始数）
       if (body.event === 'start') {
@@ -38,9 +43,12 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ success: true }), { headers });
       }
 
-      const test = TESTS.has(body.test) ? body.test : 'unknown';
+      if (!TESTS.has(body.test)) {
+        return new Response(JSON.stringify({ success: true, skipped: 'invalid-test' }), { headers });
+      }
+      const test = body.test;
       const score = Math.max(0, Math.min(160, parseInt(body.score, 10) || 0));
-      const label = String(body.label || '').slice(0, 20);
+      const label = String(body.label || '').replace(/[<>]/g, '').slice(0, 20);
       const dur = Math.max(0, Math.min(7200, parseInt(body.dur, 10) || 0));
       const ref = String(body.ref || '').slice(0, 120);
 

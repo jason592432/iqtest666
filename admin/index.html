@@ -303,8 +303,8 @@ function renderScore(data) {
       '<td>' + fmtTime(r.timestamp) + '</td>' +
       '<td><span class="tag ' + tagClass + '">' + (TEST_NAMES[r.test] || r.test || '') + '</span></td>' +
       '<td style="font-weight:bold;">' + score + '</td>' +
-      '<td>' + (r.label || '') + '</td>' +
-      '<td style="font-size:12px;color:#888;">' + (r.location || '') + '</td>' +
+      '<td>' + escHtml(r.label) + '</td>' +
+      '<td style="font-size:12px;color:#888;">' + escHtml(r.location) + '</td>' +
     '</tr>';
   }).join('');
 }
