@@ -513,6 +513,9 @@ function showResult() {
     if (els.iqRing) els.iqRing.style.strokeDashoffset = offset;
   }, 100);
 
+  var shareTitleEl = document.querySelector('.share-section p');
+  if (shareTitleEl) shareTitleEl.innerHTML = '📤 <span data-i18n="share.title">' + t('share.title') + '</span>';
+
   var pctLine = document.getElementById('pctLine');
   if (pctLine) {
     var pctl = iqPercentile(result.fsiq);
@@ -716,7 +719,7 @@ function showResult() {
   try {
     profileText = profileFn(result, currentTest);
   } catch(e) {}
-  if (!profileText) profileText = getRichConclusion(result.fsiq);
+  if (!profileText) profileText = getRichConclusion(result.fsiq, currentLangCode);
 
   if (els.profileText) {
     els.profileText.innerHTML = '<strong>' + t('profile.label') + '</strong>' + profileText;
@@ -728,7 +731,7 @@ function showResult() {
     try {
       recText = recFn(result, currentTest);
     } catch(e) {}
-    if (!recText) recText = getRichRecommendation(result.fsiq);
+    if (!recText) recText = getRichRecommendation(result.fsiq, currentLangCode);
     els.recommendText.innerHTML = '<strong>' + recLabel + '</strong>' + recText;
   }
 
@@ -772,7 +775,16 @@ function recordScore(result, test) {
   } catch(e) {}
 }
 
-function getRichConclusion(iq) {
+function getRichConclusion(iq, lang) {
+  if (lang === 'en') {
+    if (iq >= 130) return 'Excellent performance. Your abstract reasoning is well above average — the kind of speed that makes complex problems feel simple. Keep challenging yourself with harder material.';
+    if (iq >= 120) return 'Strong result. You handle complex, unfamiliar problems quickly and confidently. Regular practice will keep this sharp.';
+    if (iq >= 110) return 'Solidly above average. You reason well under time pressure and break down problems methodically. A little deliberate practice goes a long way.';
+    if (iq >= 100) return 'A steady, typical result. You solve everyday problems without trouble. Puzzles and logic games are a good way to push further.';
+    if (iq >= 90) return 'Within the normal range. Performance depends a lot on format and state — try again when rested and see if it changes.';
+    if (iq >= 80) return 'Slightly below average this time. Fatigue, noise and small screens all cost points. Rest, then retake it once.';
+    return 'Probably not your day — or this question format simply does not suit you. Take a break and try again later.';
+  }
   if (iq >= 130) {
     return '哇！你的大脑是超频模式🚀 抽象推理能力满分，人群中不到2%的人能达到这个水平。\n\n别人还在想第一步的时候，你已经算好了三步。建议不要随便跟人炫耀，容易没朋友😎';
   } else if (iq >= 120) {
@@ -790,7 +802,14 @@ function getRichConclusion(iq) {
   }
 }
 
-function getRichRecommendation(iq) {
+function getRichRecommendation(iq, lang) {
+  if (lang === 'en') {
+    if (iq >= 130) return 'Try advanced sudoku, competitive programming, chess, or escape rooms — you need harder problems.';
+    if (iq >= 120) return 'Logic puzzles, strategy games (Go, chess), or learning a language or instrument.';
+    if (iq >= 110) return 'Figure-reasoning drills, sudoku and minesweeper are cheap ways to sharpen your edge.';
+    if (iq >= 90) return 'Play brain-training games a few times a week; steady practice shows up quickly.';
+    return 'Start with simple pattern-matching and visual puzzles, then move up. Ten minutes a day helps.';
+  }
   if (iq >= 130) {
     return '推荐挑战：高级数独、编程算法、国际象棋、密室逃脱。你的大脑需要更刺激的挑战！';
   } else if (iq >= 120) {
