@@ -1123,3 +1123,9 @@ body.in-test .seo-intro { display: none; }
   .question-text { font-size: 16px; }
   .option { font-size: 15px; }
 }
+
+/* ===== 结构修正：result / quiz 等页面实际上是 #app 的兄弟节点 =====
+   1) #app 在测试进行时是空的，但仍撑出 480px 高度 → 结果页上方出现大片空白
+   2) 这些页面不在 #app 内，会丢掉了 680px 的最大宽度约束 */
+body > .page { width: 100%; max-width: 680px; margin: 0 auto; }
+body.in-test #app { min-height: 0; }
