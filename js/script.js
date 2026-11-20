@@ -898,6 +898,14 @@ function setupReminder(testKey) {
 }
 
 // ---- i18n: language toggle buttons ----
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    var key = el.getAttribute('data-i18n');
+    var val = t(key);
+    if (val && val !== key) el.textContent = val;
+  });
+}
+
 function initLangToggle() {
   try { document.documentElement.lang = getCurrentLang(); } catch (e) {}
   var btns = document.querySelectorAll('.lang-btn');
@@ -909,6 +917,7 @@ function initLangToggle() {
     b.onclick = function() {
       setLanguage(code);
       btns.forEach(function(x) { x.classList.toggle('active', x.getAttribute('data-lang') === code); });
+      applyI18n();
     };
   });
 }
@@ -951,6 +960,7 @@ function renderSelector() {
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize language toggle buttons
   initLangToggle();
+  applyI18n();
   initDonate();
   renderSelector();
 
