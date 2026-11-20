@@ -1062,3 +1062,64 @@ body.in-test .seo-intro { display: none; }
 .donate-lead { font-size:13px; color:#6b7086; line-height:1.9; margin-bottom:16px; }
 .donate-qr { width:220px; height:220px; display:block; margin:0 auto; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,.08); }
 .donate-note { font-size:11.5px; color:#9aa0b4; margin-top:12px; line-height:1.7; }
+
+/* ===== 移动端体验优化（2026-11）=====
+   1) 把左右内边距收窄，让正文占满可用宽度
+   2) 统一放大偏小的字号（原来正文 12–13px 在手机上偏小）
+*/
+@media (max-width: 560px) {
+  body { padding: 10px 8px; }
+  .card { padding: 20px 14px; }
+
+  /* 首页选择区 */
+  .selector-subtitle { font-size: 13px; line-height: 1.6; }
+  .test-card-content h2, .test-card-content h3 { font-size: 16px; }
+  .test-desc { font-size: 13.5px; line-height: 1.65; }
+  .test-meta { font-size: 12px; }
+
+  /* 答题须知 */
+  .reminder-list li { font-size: 14.5px; line-height: 1.6; }
+
+  /* 答题页 */
+  .question-text { font-size: 16.5px; line-height: 1.65; }
+  .option { font-size: 15.5px; }
+  .badge { font-size: 11.5px; }
+  .timer { font-size: 14.5px; }
+
+  /* 结果页 */
+  .score-label { font-size: 17px; }
+  .pct-line { font-size: 16px; }
+  .calib-note { font-size: 12.5px; line-height: 1.7; max-width: none; }
+  .index-label { font-size: 12.5px; width: 96px; }
+  .detail-item, .error-item { font-size: 13.5px; }
+
+  /* 正文区（SEO 段落） */
+  .seo-intro .seo-card { padding: 22px 16px; }
+  .seo-intro { font-size: 15px; }
+  .seo-intro p { font-size: 15px; line-height: 1.85; }
+  .seo-intro li { font-size: 15px; line-height: 1.8; }
+
+  /* 打赏 */
+  .donate-lead { font-size: 13.5px; }
+  .donate-note { font-size: 12px; }
+
+  /* 博客 / 隐私页：这些页面用的是内联样式，需要 !important 覆盖 */
+  body[style] { padding: 10px !important; }
+  .blog-wrap {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+  .blog-wrap p { font-size: 15.5px !important; line-height: 1.95 !important; }
+  .blog-wrap li { font-size: 15px !important; line-height: 1.85 !important; }
+  .blog-wrap h2 { font-size: 19px !important; margin: 28px 0 10px !important; }
+  .blog-wrap table { font-size: 13.5px !important; }
+  .blog-wrap table td, .blog-wrap table th { padding: 7px 6px !important; }
+}
+
+/* 更小的屏（iPhone SE 一类）保持一点余量 */
+@media (max-width: 360px) {
+  body { padding: 8px 6px; }
+  .card { padding: 18px 12px; }
+  .question-text { font-size: 16px; }
+  .option { font-size: 15px; }
+}
